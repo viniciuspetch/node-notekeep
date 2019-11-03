@@ -97,6 +97,13 @@ app.post('/api/edit', function(req, res) {
 
 app.post('/api/delete', function(req, res) {
     console.log('api/delete');
+
+    let id = req.body.id;
+
+    let getNote = noteList.find(note => note.id == id);
+    console.log(getNote);
+
+    res.send('Deleted, dude');
 });
 
 app.listen(8000, function() {
