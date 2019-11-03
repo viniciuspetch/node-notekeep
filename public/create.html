@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>title</title>
+  <style type="text/css">
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script type="text/javascript" src="/script/create.js"></script>
+  </head>
+  <body>
+    <h1>noteKeeper</h1>
+    <h2>Create</h2>
+    <form action="/api/create" method="post">
+        Content: <br>
+        <textarea name="content"></textarea> <br>
+        Tags: <br>
+        <input type="text" name="tags"> <br>
+        <input type="hidden" id="red" name="red" value="true">
+        <input type="submit" value="Send">
+    </form>
+  </body>
+</html>
