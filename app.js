@@ -93,12 +93,10 @@ app.post('/api/edit', function(req, res) {
     else {
         res.json(getNote);
     }
-
-    res.send('/api/edit');
 });
 
 app.post('/api/delete', function(req, res) {
-    res.send('/api/delete');
+    console.log('api/delete');
 });
 
 app.listen(8000, function() {
