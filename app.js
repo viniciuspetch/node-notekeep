@@ -37,7 +37,8 @@ app.get('/edit/:id', function(req, res) {
 
 app.post('/api/create', function(req, res) {
     function note_tag_link(db, noteId, tagId) {
-        db.run(`INSERT INTO notes_tags(notes_id, tags_id) VALUES (?, ?)`, [noteId, tagId], function (err) {
+        db.run(`INSERT INTO notes_tags(notes_id, tags_id) VALUES (?, ?)`,
+        [noteId, tagId], function (err) {
             if (err) { console.error(err.message); }
             console.log('tagId ' + tagId + ' added to noteId ' + noteId);
         });
@@ -53,7 +54,8 @@ app.post('/api/create', function(req, res) {
 
     let tags = tagsString.split(','); //new RegExp("/ *[,.;] *")
 
-    db.run(`INSERT INTO notes(content, datetime) VALUES (?, ?)`, [content, datetime], function (err) {
+    db.run(`INSERT INTO notes(content, datetime) VALUES (?, ?)`,
+        [content, datetime], function (err) {
         if (err) { console.error(err.message); }
         let noteId = this.lastID;
         console.log('noteId: ' + noteId);
@@ -63,10 +65,12 @@ app.post('/api/create', function(req, res) {
             for (i in tags) {
                 tag = tags[i];
                 console.log('tag: ' + tag);
-                db.all(`SELECT * FROM tags WHERE tag = ?`, [tag], function (err, rows) {
+                db.all(`SELECT * FROM tags WHERE tag = ?`, [tag],
+                function (err, rows) {
                     if (err) { console.error(err.message); }
                     if (rows.length == 0) {
-                        db.run(`INSERT INTO tags(tag) VALUES (?)`, [tag], function (err) {
+                        db.run(`INSERT INTO tags(tag) VALUES (?)`, [tag],
+                        function (err) {
                             if (err) { console.error(err.message); }
                             console.log('tag ' + tag + ' created');
                             note_tag_link(db, noteId, this.lastID);
@@ -90,7 +94,27 @@ app.post('/api/create', function(req, res) {
 });
 
 app.get('/api/read', function(req, res) {
-    console.log('/api/read');
+    console.log('\n/api/read');
+
+    let id = req.query.id;
+    let db = new sqlite3.Database('note.db');
+
+    if (id === undefined) {
+        let noteList;
+        db.each(`SELECT * FROM notes`, [], function (err, row) {
+            db.all(`SELECT tags.tag FROM notes_tags JOIN tags ON notes_tags.tags_id = tags.id WHERE notes_tags.notes_id = ?`, [row.id], function (err, rows) {
+                let note = row;
+                note.tags = [];
+                for (i in rows) {
+                    note.tags.push(rows[i].tag);
+                }
+                console.log(note);                
+            });
+        });
+    }
+
+    /*
+    
     let id = req.query.id;
     console.log(id);
 
@@ -104,6 +128,7 @@ app.get('/api/read', function(req, res) {
     }
 
     res.send(result);
+    */
 });
 
 app.post('/api/edit', function(req, res) {
