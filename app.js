@@ -1,7 +1,7 @@
 let Note = require('./Note.js');
 let express = require('express');
 let bodyParser = require('body-parser');
-let sqlite = require('sqlite3');
+let sqlite3 = require('sqlite3');
 
 let app = express();
 
@@ -36,21 +36,65 @@ app.get('/edit/:id', function(req, res) {
 });
 
 app.post('/api/create', function(req, res) {
-    console.log(req.body);
+    console.log('/api/create');
+
+    let db = new sqlite3.Database('note.db');
 
     let content = req.body.content;
-    let tags = req.body.tags;
+    let tagsString = req.body.tags;
     let datetime = new Date();
-    newNote = new Note(noteController, content, tags, datetime);
-    noteList.push(newNote);
-    console.log(newNote);
 
+    let tags = tagsString.split(','); //new RegExp("/ *[,.;] *")
+
+    console.log('before db');
+
+    db.run(`INSERT INTO notes(content, datetime) VALUES (?, ?)`, [content, datetime], function (err) {
+        if (err) { console.error(err.message); }
+        console.log('during db');
+    });
+
+    console.log('after db');
+
+    db.close();
+
+    res.send('done');
+    /*
+    console.log('noteId: ' + noteId);
+    if (noteId != null) {
+        for (i in tags) {
+            console.log('i: ' + i);
+            console.log(typeof(i));
+            tag = tags[i];
+            console.log('tag: ' + tag);
+            db.all(`SELECT * FROM tags WHERE tag = ?`, [tag], (err, rows) => {
+                if (err) { console.error(err.message); }
+                console.log(rows);
+                let tagId = null;
+                if (rows.length == 0) {
+                    db.run(`INSERT INTO tags(tag) VALUES (?)`, [tag], (err) => {
+                        if (err) { console.error(err.message); }
+                        console.log('New tag created');
+                        tagId = this.lastId;
+                    });
+                }
+            });
+        }
+    }
+
+    //newNote = new Note(noteController, content, tags, datetime);
+
+    //noteList.push(newNote);
+    //console.log(newNote);
+
+    res.send('/api/create');
     if (req.body.red = true) {
-        res.redirect('/read');
+        //res.redirect('/read');
     }
     else {
-        res.json(newNote);
+        //res.json(newNote);
+        //res.send('/api/create');
     }
+    */
 });
 
 app.get('/api/read', function(req, res) {
