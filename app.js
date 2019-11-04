@@ -36,7 +36,14 @@ app.get('/edit/:id', function(req, res) {
 });
 
 app.post('/api/create', function(req, res) {
-    console.log('/api/create');
+    function note_tag_link(db, noteId, tagId) {
+        db.run(`INSERT INTO notes_tags(notes_id, tags_id) VALUES (?, ?)`, [noteId, tagId], function (err) {
+            if (err) { console.error(err.message); }
+            console.log('tagId ' + tagId + ' added to noteId ' + noteId);
+        });
+    }
+
+    console.log('\n/api/create');
 
     let db = new sqlite3.Database('note.db');
 
@@ -46,55 +53,35 @@ app.post('/api/create', function(req, res) {
 
     let tags = tagsString.split(','); //new RegExp("/ *[,.;] *")
 
-    console.log('before db');
-
     db.run(`INSERT INTO notes(content, datetime) VALUES (?, ?)`, [content, datetime], function (err) {
         if (err) { console.error(err.message); }
-        console.log('during db');
-    });
+        let noteId = this.lastID;
+        console.log('noteId: ' + noteId);
 
-    console.log('after db');
-
-    db.close();
-
-    res.send('done');
-    /*
-    console.log('noteId: ' + noteId);
-    if (noteId != null) {
-        for (i in tags) {
-            console.log('i: ' + i);
-            console.log(typeof(i));
-            tag = tags[i];
-            console.log('tag: ' + tag);
-            db.all(`SELECT * FROM tags WHERE tag = ?`, [tag], (err, rows) => {
-                if (err) { console.error(err.message); }
-                console.log(rows);
-                let tagId = null;
-                if (rows.length == 0) {
-                    db.run(`INSERT INTO tags(tag) VALUES (?)`, [tag], (err) => {
-                        if (err) { console.error(err.message); }
-                        console.log('New tag created');
-                        tagId = this.lastId;
-                    });
-                }
-            });
+        if (noteId != null) {
+            console.log('Adding tags');
+            for (i in tags) {
+                tag = tags[i];
+                console.log('tag: ' + tag);
+                db.all(`SELECT * FROM tags WHERE tag = ?`, [tag], function (err, rows) {
+                    if (err) { console.error(err.message); }
+                    if (rows.length == 0) {
+                        db.run(`INSERT INTO tags(tag) VALUES (?)`, [tag], function (err) {
+                            if (err) { console.error(err.message); }
+                            console.log('tag ' + tag + ' created');
+                            note_tag_link(db, noteId, this.lastID);
+                        });
+                    }
+                    else {
+                        console.log('tag ' + tag + ' already exists');
+                        note_tag_link(db, noteId, rows[0].id);
+                    }
+                });
+            }
         }
-    }
-
-    //newNote = new Note(noteController, content, tags, datetime);
-
-    //noteList.push(newNote);
-    //console.log(newNote);
-
+    });    
+    
     res.send('/api/create');
-    if (req.body.red = true) {
-        //res.redirect('/read');
-    }
-    else {
-        //res.json(newNote);
-        //res.send('/api/create');
-    }
-    */
 });
 
 app.get('/api/read', function(req, res) {
