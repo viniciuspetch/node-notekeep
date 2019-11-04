@@ -81,7 +81,12 @@ app.post('/api/create', function(req, res) {
         }
     });    
     
-    res.send('/api/create');
+    if (req.body.red = true) {
+        res.redirect('/read');
+    }
+    else {
+        res.json({status: 'Ok'});
+    }
 });
 
 app.get('/api/read', function(req, res) {
