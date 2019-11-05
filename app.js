@@ -166,7 +166,7 @@ app.post('/api/edit', function(req, res) {
         }
         console.log('oldTags: ' + oldTags);
         for (let i = 0; i < newTags.length; i++) {
-            if (newTags[i] != null && oldTags.indexOf(newTags[i]) == -1) {
+            if (newTags[i] != null && newTags[i] != '' && oldTags.indexOf(newTags[i]) == -1) {
                 console.log('insert -> ' + newTags[i]);
                 db.run(`INSERT INTO tags(tag) VALUES (?)`, [newTags[i]],
                 function(err) {
@@ -184,7 +184,6 @@ app.post('/api/edit', function(req, res) {
             }
         }        
     })
-    /*
     db.run(`UPDATE notes SET content = ? WHERE id = ?`, [content, id]);
     
     if (req.body.red = true) {
@@ -193,19 +192,21 @@ app.post('/api/edit', function(req, res) {
     else {
         res.json({status: 'Ok'});
     }
-    */
-    res.send('fart');
 });
 
-app.post('/api/delete', function(req, res) {
-    console.log('api/delete');
+app.get('/api/delete/:id', function(req, res) {
+    console.log('\n/api/delete');
+    console.log(req.body);
+    
+    let db = new sqlite3.Database('note.db');
+    let id = req.params.id;
 
-    let id = req.body.id;
-
-    let getNote = noteList.find(note => note.id == id);
-    console.log(getNote);
-
-    res.send('Deleted, dude');
+    db.run(`DELETE FROM notes WHERE id = ?`, [id], function(err) {
+        db.run(`DELETE FROM notes_tags WHERE notes_id = ?`, [id],
+        function(err) {
+            res.redirect('/read');        
+        });
+    });
 });
 
 app.listen(8000, function() {
