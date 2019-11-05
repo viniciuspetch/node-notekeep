@@ -97,12 +97,11 @@ app.get('/api/read', function(req, res) {
         FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id
         LEFT JOIN tags ON notes_tags.tags_id = tags.id ORDER BY notes.id`,
         function (err, rows) {
-            //console.log(rows);
+            console.log(rows);
             let init = null;
             let noteList = [];
             let note;
             for (let i = 0; i < rows.length; i++) {
-                console.log(i, init);
                 if (init == null) {
                     init = rows[i].id;
                     note = {
@@ -121,6 +120,7 @@ app.get('/api/read', function(req, res) {
                     i--;
                 }
             }
+            noteList.push(note);
             console.log(noteList);
             res.send(noteList);
         });
@@ -147,27 +147,27 @@ app.get('/api/read', function(req, res) {
 
 app.post('/api/edit', function(req, res) {
     console.log('\n/api/edit');
+    console.log(req.body);
 
     let db = new sqlite3.Database('note.db');
     let id = req.body.id;
     let content = req.body.content;
     let tags = req.body.tags;
     let newTags = tags.split(',');
-    console.log(newTags);
+    console.log('tags: ' + tags);
+    console.log('newTags: ' + newTags);
     
     db.all(`SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags
     ON notes_tags.tags_id = tags.id WHERE notes_tags.notes_id = ?`, [id],
     function (err, rows) {
-        console.log(rows);
         oldTags = [];
         for (let i = 0; i < rows.length; i++) {
             oldTags.push(rows[i].tag);
         }
-        console.log('Check insert');
+        console.log('oldTags: ' + oldTags);
         for (let i = 0; i < newTags.length; i++) {
-            console.log(i);
-            if (oldTags.indexOf(newTags[i]) == -1) {
-                console.log("Need to insert");                
+            if (newTags[i] != null && oldTags.indexOf(newTags[i]) == -1) {
+                console.log('insert -> ' + newTags[i]);
                 db.run(`INSERT INTO tags(tag) VALUES (?)`, [newTags[i]],
                 function(err) {
                     newTagId = this.lastID;
@@ -176,12 +176,11 @@ app.post('/api/edit', function(req, res) {
                 })
             }
         }
-        console.log('Check remove');
         for (let i = 0; i < oldTags.length; i++) {
-            console.log(i);
             if (newTags.indexOf(oldTags[i]) == -1) {
-                console.log("Need to remove");
-                db.run(`DELETE FROM tags WHERE tag = ?`, [oldTags[i]]);
+                console.log('remove -> ' + oldTags[i]);
+                db.run(`DELETE FROM notes_tags WHERE notes_id = ? 
+                AND tags_id = ?`, [id, oldTags[i]]);
             }
         }        
     })
