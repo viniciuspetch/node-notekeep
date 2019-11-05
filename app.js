@@ -95,41 +95,92 @@ app.post('/api/create', function(req, res) {
 
 app.get('/api/read', function(req, res) {
     console.log('\n/api/read');
+    let db = new sqlite3.Database('note.db');
+    let id = req.query.id;
+
+    if (id === undefined) {
+        db.all(`SELECT notes.id, notes.content, notes.datetime, tags.tag
+        FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id
+        LEFT JOIN tags ON notes_tags.tags_id = tags.id ORDER BY notes.id`,
+        function (err, rows) {
+            //console.log(rows);
+            let init = null;
+            let noteList = [];
+            let note;
+            for (let i = 0; i < rows.length; i++) {
+                console.log(i, init);
+                if (init == null) {
+                    init = rows[i].id;
+                    note = {
+                        id: rows[i].id,
+                        content: rows[i].content,
+                        datetime: rows[i].datetime,
+                        tags: [rows[i].tag],
+                    };
+                }
+                else if (init == rows[i].id) {
+                    note.tags.push(rows[i].tag);
+                }
+                else {
+                    init = null;
+                    noteList.push(note);
+                    i--;
+                }
+            }
+            console.log(noteList);
+            res.send(noteList);
+        });
+    }
+    else {
+        db.all(`SELECT notes.id, notes.content, notes.datetime, tags.tag
+        FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id
+        LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.id = ?`,
+        [id], function (err, rows) {
+            console.log(rows);
+            let note = {
+                id: rows[0].id,
+                content: rows[0].content,
+                datetime: rows[0].datetime,
+                tags: [],
+            };
+            for (let i = 0; i < rows.length; i++) {
+                note.tags.push(rows[i].tag);
+            }
+            res.send(note);
+        });
+    }    
+});
+
+/*
+app.get('/api/read', function(req, res) {
+    function notes_join_tags(db, note) {
+        db.all(`SELECT tags.tag FROM notes_tags JOIN tags ON notes_tags.tags_id = tags.id WHERE notes_tags.notes_id = ?`, [note.id], function (err2, tagList) {
+            note.tags = [];
+            for (j in tagList) {
+                note.tags.push(tagList[j].tag);
+            }
+            console.log(note);
+            result.push(note);
+        });
+    }
+
+    console.log('\n/api/read');
 
     let id = req.query.id;
     let db = new sqlite3.Database('note.db');
 
     if (id === undefined) {
-        let noteList;
-        db.each(`SELECT * FROM notes`, [], function (err, row) {
-            db.all(`SELECT tags.tag FROM notes_tags JOIN tags ON notes_tags.tags_id = tags.id WHERE notes_tags.notes_id = ?`, [row.id], function (err, rows) {
-                let note = row;
-                note.tags = [];
-                for (i in rows) {
-                    note.tags.push(rows[i].tag);
+        db.serialize(() => {
+            db.all(`SELECT * FROM notes`, [], function (err1, noteList) {
+                for (i in noteList) {
+                    notes_join_tags(db, noteList[i]);
                 }
-                console.log(note);                
+                res.send(noteList);
             });
         });
     }
-
-    /*
-    
-    let id = req.query.id;
-    console.log(id);
-
-    if (id === undefined) {
-        console.log('Returning list of all notes');
-        result = noteList;
-    }
-    else {
-        console.log('Returning specific note - id: ' + id);
-        result = noteList[id];
-    }
-
-    res.send(result);
-    */
 });
+*/
 
 app.post('/api/edit', function(req, res) {
     console.log('/api/edit');
