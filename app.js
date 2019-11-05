@@ -11,13 +11,6 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-noteList = [];
-noteController = {
-    lastCreatedId: null,
-    nextCreatedId: 0,
-    lastReadId: null,
-};
-
 app.get('/', function(req, res) {
     res.sendFile(__dirname+'/public/index.html');
 });
@@ -95,6 +88,7 @@ app.post('/api/create', function(req, res) {
 
 app.get('/api/read', function(req, res) {
     console.log('\n/api/read');
+
     let db = new sqlite3.Database('note.db');
     let id = req.query.id;
 
@@ -151,60 +145,57 @@ app.get('/api/read', function(req, res) {
     }    
 });
 
-/*
-app.get('/api/read', function(req, res) {
-    function notes_join_tags(db, note) {
-        db.all(`SELECT tags.tag FROM notes_tags JOIN tags ON notes_tags.tags_id = tags.id WHERE notes_tags.notes_id = ?`, [note.id], function (err2, tagList) {
-            note.tags = [];
-            for (j in tagList) {
-                note.tags.push(tagList[j].tag);
-            }
-            console.log(note);
-            result.push(note);
-        });
-    }
-
-    console.log('\n/api/read');
-
-    let id = req.query.id;
-    let db = new sqlite3.Database('note.db');
-
-    if (id === undefined) {
-        db.serialize(() => {
-            db.all(`SELECT * FROM notes`, [], function (err1, noteList) {
-                for (i in noteList) {
-                    notes_join_tags(db, noteList[i]);
-                }
-                res.send(noteList);
-            });
-        });
-    }
-});
-*/
-
 app.post('/api/edit', function(req, res) {
-    console.log('/api/edit');
-    console.log(req.body);
+    console.log('\n/api/edit');
 
+    let db = new sqlite3.Database('note.db');
     let id = req.body.id;
     let content = req.body.content;
     let tags = req.body.tags;
-    let datetime = new Date();
-
-    let getNote = noteList.find(note => note.id == id);
-    console.log(getNote);
-    getNote.content = content;
-    getNote.tags = tags;
-    getNote.datetime = datetime;
-
-    console.log(getNote);
-
+    let newTags = tags.split(',');
+    console.log(newTags);
+    
+    db.all(`SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags
+    ON notes_tags.tags_id = tags.id WHERE notes_tags.notes_id = ?`, [id],
+    function (err, rows) {
+        console.log(rows);
+        oldTags = [];
+        for (let i = 0; i < rows.length; i++) {
+            oldTags.push(rows[i].tag);
+        }
+        console.log('Check insert');
+        for (let i = 0; i < newTags.length; i++) {
+            console.log(i);
+            if (oldTags.indexOf(newTags[i]) == -1) {
+                console.log("Need to insert");                
+                db.run(`INSERT INTO tags(tag) VALUES (?)`, [newTags[i]],
+                function(err) {
+                    newTagId = this.lastID;
+                    db.run(`INSERT INTO notes_tags(notes_id, tags_id)
+                    VALUES (?, ?)`, [id, newTagId]);
+                })
+            }
+        }
+        console.log('Check remove');
+        for (let i = 0; i < oldTags.length; i++) {
+            console.log(i);
+            if (newTags.indexOf(oldTags[i]) == -1) {
+                console.log("Need to remove");
+                db.run(`DELETE FROM tags WHERE tag = ?`, [oldTags[i]]);
+            }
+        }        
+    })
+    /*
+    db.run(`UPDATE notes SET content = ? WHERE id = ?`, [content, id]);
+    
     if (req.body.red = true) {
         res.redirect('/read');
     }
     else {
-        res.json(getNote);
+        res.json({status: 'Ok'});
     }
+    */
+    res.send('fart');
 });
 
 app.post('/api/delete', function(req, res) {
