@@ -2,3 +2,4 @@
 package-lock.json
 sqlite3.exe
 note.db
+.vscode/settings.json
