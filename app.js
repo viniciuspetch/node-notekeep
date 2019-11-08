@@ -1,34 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3');
-const uuid = require('uuid/v4');
-const session = require('express-session');
-const passport = require('passport');
-const LocalStrategy = require('passport-local');
-
-passport.use(new LocalStrategy(
-    function(username, password, done) {
-        console.log('passport');
-        return done(null, user);
-    }
-));
-
 
 let app = express();
 
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
-app.use(session({
-    genid: (req) => {
-        console.log("Inside session middleware");
-        console.log(req.sessionID);
-        return uuid();
-    },
-    secret: 'node-notekeep',
-    resave: false,
-    saveUninitialized: true,
-}));
 
 app.get('/loginpage', function(req, res) {
     res.sendFile(__dirname+'/public/html/login.html');
