@@ -8,42 +8,39 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-app.get('/loginpage', function(req, res) {
-    res.sendFile(__dirname+'/public/html/login.html');
-});
-
-app.get('/login', (req,res) => {
+app.get('/login', function(req, res) {
     console.log('\n/login GET');
-    console.log(req.sessionID);
-    res.send('Login GET');
+    res.sendFile(__dirname+'/public/html/login.html');
 })
 
 app.post('/login', passport.authenticate('local'), (req,res) => {
-    console.log('\n/login POST');   
-    console.log(req.body);
+    console.log('\n/login POST');
     res.send('Login POST');
 })
 
 app.get('/', function(req, res) {
-    console.log('\n/index');
-    console.log(req.sessionID);
+    console.log('\n/index GET');
     res.sendFile(__dirname+'/public/html/index.html');
 });
 
 app.get('/create', function(req, res) {
+    console.log('\n/create GET');
     res.sendFile(__dirname+'/public/html/create.html');
 });
 
 app.get('/read', function(req, res) {
+    console.log('\n/read GET');
     res.sendFile(__dirname+'/public//html/read.html');
 });
 
 app.get('/edit/:id', function(req, res) {
+    console.log('\n/edit/:id GET');
     let id = req.params.id;
     res.sendFile(__dirname+'/public/html/edit.html');
 });
 
 app.post('/api/create', function(req, res) {
+    console.log('\n/api/create POST');
     function note_tag_link(db, noteId, tagId) {
         db.run(`INSERT INTO notes_tags(notes_id, tags_id) VALUES (?, ?)`,
         [noteId, tagId], function (err) {
@@ -51,8 +48,6 @@ app.post('/api/create', function(req, res) {
             console.log('tagId ' + tagId + ' added to noteId ' + noteId);
         });
     }
-
-    console.log('\n/api/create');
 
     let db = new sqlite3.Database('note.db');
 
@@ -102,7 +97,7 @@ app.post('/api/create', function(req, res) {
 });
 
 app.get('/api/read', function(req, res) {
-    console.log('\n/api/read');
+    console.log('\n/api/read GET');
 
     let db = new sqlite3.Database('note.db');
     let id = req.query.id;
@@ -161,7 +156,8 @@ app.get('/api/read', function(req, res) {
 });
 
 app.post('/api/edit', function(req, res) {
-    console.log('\n/api/edit');
+    console.log('\n/api/edit POST');
+
     console.log(req.body);
 
     let db = new sqlite3.Database('note.db');
@@ -210,7 +206,7 @@ app.post('/api/edit', function(req, res) {
 });
 
 app.get('/api/delete/:id', function(req, res) {
-    console.log('\n/api/delete');
+    console.log('\n/api/delete GET');
     console.log(req.body);
     
     let db = new sqlite3.Database('note.db');
