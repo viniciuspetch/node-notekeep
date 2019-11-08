@@ -1,31 +1,68 @@
-let Note = require('./Note.js');
-let express = require('express');
-let bodyParser = require('body-parser');
-let sqlite3 = require('sqlite3');
+const express = require('express');
+const bodyParser = require('body-parser');
+const sqlite3 = require('sqlite3');
+const uuid = require('uuid/v4');
+const session = require('express-session');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+
+passport.use(new LocalStrategy(
+    function(username, password, done) {
+        console.log('passport');
+        return done(null, user);
+    }
+));
+
 
 let app = express();
-
-let router = express.Router();
 
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(session({
+    genid: (req) => {
+        console.log("Inside session middleware");
+        console.log(req.sessionID);
+        return uuid();
+    },
+    secret: 'node-notekeep',
+    resave: false,
+    saveUninitialized: true,
+}));
+
+app.get('/loginpage', function(req, res) {
+    res.sendFile(__dirname+'/public/html/login.html');
+});
+
+app.get('/login', (req,res) => {
+    console.log('\n/login GET');
+    console.log(req.sessionID);
+    res.send('Login GET');
+})
+
+app.post('/login', passport.authenticate('local'), (req,res) => {
+    console.log('\n/login POST');   
+    console.log(req.body);
+    res.send('Login POST');
+})
 
 app.get('/', function(req, res) {
-    res.sendFile(__dirname+'/public/index.html');
+    console.log('\n/index');
+    console.log(req.sessionID);
+    res.sendFile(__dirname+'/public/html/index.html');
 });
 
 app.get('/create', function(req, res) {
-    res.sendFile(__dirname+'/public/create.html');
+    res.sendFile(__dirname+'/public/html/create.html');
 });
 
 app.get('/read', function(req, res) {
-    res.sendFile(__dirname+'/public/read.html');
+    res.sendFile(__dirname+'/public//html/read.html');
 });
 
 app.get('/edit/:id', function(req, res) {
     let id = req.params.id;
-    res.sendFile(__dirname+'/public/edit.html');
+    res.sendFile(__dirname+'/public/html/edit.html');
 });
 
 app.post('/api/create', function(req, res) {
