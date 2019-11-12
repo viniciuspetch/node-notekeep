@@ -4,7 +4,7 @@ CREATE TABLE
         usrn text not null,
         pswd text not null,
         creation integer not null,
-        lastupdated integer not null,
+        lastupdated integer not null
     );
 
 CREATE TABLE
