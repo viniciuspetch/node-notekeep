@@ -80,8 +80,8 @@ app.post('/api/create', function(req, res) {
 
     let tags = tagsString.split(','); //new RegExp("/ *[,.;] *")
 
-    db.run(`INSERT INTO notes(content, datetime) VALUES (?, ?)`,
-        [content, datetime], function (err) {
+    db.run(`INSERT INTO notes(content, creation, lastupdated) VALUES (?, ?, ?)`,
+        [content, datetime, datetime], function (err) {
         if (err) { console.error(err.message); }
         let noteId = this.lastID;
         console.log('noteId: ' + noteId);
@@ -133,7 +133,7 @@ app.get('/api/read', function(req, res) {
     console.log('username: '+ username.username);
 
     if (id === undefined) {
-        db.all(`SELECT notes.id, notes.content, notes.datetime, tags.tag
+        db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag
         FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id
         LEFT JOIN tags ON notes_tags.tags_id = tags.id ORDER BY notes.id`,
         function (err, rows) {
@@ -147,7 +147,7 @@ app.get('/api/read', function(req, res) {
                     note = {
                         id: rows[i].id,
                         content: rows[i].content,
-                        datetime: rows[i].datetime,
+                        datetime: rows[i].lastupdated,
                         tags: [rows[i].tag],
                     };
                 }
@@ -166,7 +166,7 @@ app.get('/api/read', function(req, res) {
         });
     }
     else {
-        db.all(`SELECT notes.id, notes.content, notes.datetime, tags.tag
+        db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag
         FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id
         LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.id = ?`,
         [id], function (err, rows) {
@@ -174,7 +174,7 @@ app.get('/api/read', function(req, res) {
             let note = {
                 id: rows[0].id,
                 content: rows[0].content,
-                datetime: rows[0].datetime,
+                datetime: rows[0].lastupdated,
                 tags: [],
             };
             for (let i = 0; i < rows.length; i++) {
