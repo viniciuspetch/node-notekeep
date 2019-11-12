@@ -1,6 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3');
+const jwt = require('jsonwebtoken');
+
+function newJWT(username) {
+    return jwt.sign({username: username}, 'secret', {expiresIn: '24h'});
+}
 
 let app = express();
 
@@ -13,9 +18,17 @@ app.get('/login', function(req, res) {
     res.sendFile(__dirname+'/public/html/login.html');
 })
 
-app.post('/login', passport.authenticate('local'), (req,res) => {
+app.post('/login', (req,res) => {
     console.log('\n/login POST');
-    res.send('Login POST');
+    let username = req.body.username;
+    let password = req.body.password;
+    token = newJWT(username);
+    console.log(token);
+    response = {
+        token,
+    }
+    console.log(response);
+    res.json(response);
 })
 
 app.get('/', function(req, res) {
