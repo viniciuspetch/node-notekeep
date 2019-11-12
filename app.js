@@ -114,6 +114,10 @@ app.get('/api/read', function(req, res) {
 
     let db = new sqlite3.Database('note.db');
     let id = req.query.id;
+    let token = req.query.token;
+
+    console.log('id: ' + id);
+    console.log('token:' + token);
 
     if (id === undefined) {
         db.all(`SELECT notes.id, notes.content, notes.datetime, tags.tag
