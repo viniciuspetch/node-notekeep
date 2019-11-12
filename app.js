@@ -2,9 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3');
 const jwt = require('jsonwebtoken');
+const jwtSecret = 'nodejs';
 
 function newJWT(username) {
-    return jwt.sign({username: username}, 'secret', {expiresIn: '24h'});
+    return jwt.sign({username: username}, jwtSecret, {expiresIn: '24h'});
+}
+
+function verifyJWT(token) {
+    return jwt.verify(token, jwtSecret);
 }
 
 let app = express();
@@ -16,6 +21,11 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.get('/login', function(req, res) {
     console.log('\n/login GET');
     res.sendFile(__dirname+'/public/html/login.html');
+})
+
+app.get('/signup', function(req, res) {
+    console.log('\n/login GET');
+    res.sendFile(__dirname+'/public/html/signup.html');
 })
 
 app.post('/login', (req,res) => {
@@ -116,8 +126,11 @@ app.get('/api/read', function(req, res) {
     let id = req.query.id;
     let token = req.query.token;
 
+    username = verifyJWT(token);
+
     console.log('id: ' + id);
     console.log('token:' + token);
+    console.log('username: '+ username.username);
 
     if (id === undefined) {
         db.all(`SELECT notes.id, notes.content, notes.datetime, tags.tag
