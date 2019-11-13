@@ -1,3 +1,4 @@
 $(function() {
-    console.log('hello');
+    console.log('index.js');
+    console.log(localStorage.getItem('token'));
 });

@@ -1,6 +1,7 @@
 $(function() {
     console.log('read.js');
-
+    console.log(localStorage.getItem('token'));
+    
     token = localStorage.getItem('token');
     data = {token};
     $.get("http://localhost:8000/api/read", data, (response) => {

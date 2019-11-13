@@ -1,5 +1,7 @@
 $(function() {
     console.log('edit.js');
+    console.log(localStorage.getItem('token'));
+    
     let url_array = window.location.href.split('/');
     let url_id = url_array[url_array.length-1];
     console.log(url_id);
