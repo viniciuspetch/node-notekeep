@@ -10,12 +10,12 @@ CREATE TABLE
 CREATE TABLE
     notes (
         id integer primary key,
-        user_id integer not null,
+        user_acc_id integer not null,
         content text not null,
         creation integer not null,
         lastupdated integer not null,
         foreign key
-            (user_id)
+            (user_acc_id)
             references user_acc (id)
     );
 
