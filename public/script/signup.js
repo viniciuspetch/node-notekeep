@@ -7,7 +7,7 @@ function signup() {
     data = {username, password};
     console.log(data);
     $.post(url, data, (response) => {
-        console.log('done');
+        console.log(response);
     });
 }
 

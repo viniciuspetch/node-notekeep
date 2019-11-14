@@ -12,7 +12,14 @@ function newJWT(username) {
 }
 
 function verifyJWT(token) {
-  return jwt.verify(token, jwtSecret);
+  let verifiedToken;
+  try {
+    verifiedToken = jwt.verify(token, jwtSecret);
+    return verifiedToken;
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
 }
 
 let app = express();
@@ -29,26 +36,6 @@ app.get('/login', function (req, res) {
 app.get('/signup', function (req, res) {
   console.log('\n/signup GET');
   res.sendFile(__dirname + '/public/html/signup.html');
-});
-
-app.post('/api/signup', function (req, res) {
-  console.log('\n/api/signup POST');
-  console.log(req.body);
-
-  let db = new sqlite3.Database('note.db');
-  let username = req.body.username;
-  let password = req.body.password;
-  let datetime = Date.now();
-  console.log(username);
-  console.log(datetime);
-  let hash = bcrypt.hashSync(password, 5);  
-  console.log(typeof(hash));
-
-  db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES 
-  ("${username}", "${hash}", "${datetime}", "${datetime}")`), function (err) {
-    console.log(err);
-    res.json({result: true});
-  }
 });
 
 app.post('/login', (req, res) => {
@@ -88,6 +75,33 @@ app.get('/edit/:id', function (req, res) {
   console.log('\n/edit/:id GET');
   let id = req.params.id;
   res.sendFile(__dirname + '/public/html/edit.html');
+});
+
+app.post('/api/signup', function (req, res) {
+  console.log('\n/api/signup POST');
+  console.log(req.body);
+
+  let db = new sqlite3.Database('note.db');
+  let username = req.body.username;
+  let password = req.body.password;
+  let datetime = Date.now();
+  console.log(username);
+  console.log(datetime);
+  let hash = bcrypt.hashSync(password, 5);  
+  console.log(typeof(hash));
+
+  db.get(`SELECT usrn FROM user_acc WHERE usrn="${username}"`, function(err, row) {
+    console.log('row: ' + row);
+    if (row == undefined) {
+      db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES 
+      ("${username}", "${hash}", "${datetime}", "${datetime}")`, function (err) {
+        console.log(err);
+        res.json({result: true});
+      });
+    } else {
+      res.json({result: false, reason: 'alreadyExists'});
+    }    
+  });
 });
 
 app.post('/api/create', function (req, res) {
