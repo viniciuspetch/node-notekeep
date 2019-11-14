@@ -40,15 +40,32 @@ app.get('/signup', function (req, res) {
 
 app.post('/login', (req, res) => {
   console.log('\n/login POST');
+
+  let db = new sqlite3.Database('note.db');
   let username = req.body.username;
-  let password = req.body.password;
-  token = newJWT(username);
-  console.log(token);
-  response = {
-    token,
-  }
-  console.log(response);
-  res.json(response);
+  let password = req.body.password;  
+  console.log('username: ' + username);
+  console.log('password: ' + password);
+
+  db.get(`SELECT pswd FROM user_acc WHERE usrn="${username}"`, function(err, row) {
+    console.log('row: ' + row);
+    if (row != undefined) {
+      let hash = row.pswd;
+      console.log('hash: ' + hash);
+      compareRes = bcrypt.compareSync(password, hash);
+      console.log(compareRes);
+      if (compareRes == true) {
+        token = newJWT(username);
+        console.log('token: ' + token);
+        response = {result: true, token};
+        res.json(response);
+      } else {
+        res.json({result: false, reason: 'wrongPassword'});
+      }
+    } else {
+      res.json({result: false, reason: 'usernameNotFound'});
+    }
+  });
 });
 
 app.get('/', function (req, res) {
@@ -84,23 +101,33 @@ app.post('/api/signup', function (req, res) {
   let db = new sqlite3.Database('note.db');
   let username = req.body.username;
   let password = req.body.password;
-  let datetime = Date.now();
-  console.log(username);
-  console.log(datetime);
   let hash = bcrypt.hashSync(password, 5);  
+  let datetime = Date.now();
+  
+  console.log(username);
+  console.log(datetime);  
   console.log(typeof(hash));
+
+  // Check empty username
+  if (username == undefined) {
+    res.json({result: false, reason: 'emptyUsername'});
+  }
+  // Check empty password
+  if (password == undefined) {
+    res.json({result: false, reason: 'emptyPassword'});
+  }
 
   db.get(`SELECT usrn FROM user_acc WHERE usrn="${username}"`, function(err, row) {
     console.log('row: ' + row);
-    if (row == undefined) {
-      db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES 
-      ("${username}", "${hash}", "${datetime}", "${datetime}")`, function (err) {
-        console.log(err);
-        res.json({result: true});
-      });
-    } else {
+    // Check if username is already used
+    if (row != undefined) {
       res.json({result: false, reason: 'alreadyExists'});
-    }    
+    }
+    // Otherwise, create a new account
+    db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES 
+    ("${username}", "${hash}", "${datetime}", "${datetime}")`, function (err) {
+      res.json({result: true});
+    });
   });
 });
 
@@ -169,6 +196,9 @@ app.get('/api/read', function (req, res) {
   let token = req.query.token;
 
   username = verifyJWT(token);
+  if (username == false) {
+    res.redirect('/login');
+  }
 
   console.log('id: ' + id);
   console.log('token:' + token);

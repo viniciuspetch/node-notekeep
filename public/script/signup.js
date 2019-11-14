@@ -2,12 +2,12 @@ function signup() {
     console.log('signup()');
 
     let url = "http://localhost:8000/api/signup";
-    username = $('#username').val();
-    password = $('#password').val();
-    data = {username, password};
-    console.log(data);
-    $.post(url, data, (response) => {
-        console.log(response);
+    let username = $('#username').val();
+    let password = $('#password').val();
+    
+    $.post(url, {username, password}, (data) => {
+        console.log('result: ' + data.result);
+        if (data.reason) console.log('reason: ' + data.reason);
     });
 }
 
