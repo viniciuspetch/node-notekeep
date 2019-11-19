@@ -8,6 +8,10 @@ function signup() {
     $.post(url, {username, password}, (data) => {
         console.log('result: ' + data.result);
         if (data.reason) console.log('reason: ' + data.reason);
+        if (data.result == true) {
+            localStorage.setItem('token', data.token);
+            window.location.href = '../';
+        }
     });
 }
 

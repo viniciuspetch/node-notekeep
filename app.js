@@ -38,6 +38,11 @@ app.get('/signup', function (req, res) {
   res.sendFile(__dirname + '/public/html/signup.html');
 });
 
+app.get('/signout', function (req, res) {
+  console.log('\n/signout GET');
+  res.sendFile(__dirname + '/public/html/signout.html');
+})
+
 app.post('/login', (req, res) => {
   console.log('\n/login POST');
 
@@ -48,13 +53,15 @@ app.post('/login', (req, res) => {
   console.log('password: ' + password);
 
   db.get(`SELECT pswd FROM user_acc WHERE usrn="${username}"`, function(err, row) {
-    console.log('row: ' + row);
+    // Check if username exists
     if (row != undefined) {
+      console.log('Username found');
       let hash = row.pswd;
       console.log('hash: ' + hash);
       compareRes = bcrypt.compareSync(password, hash);
       console.log(compareRes);
       if (compareRes == true) {
+        console.log('Username verified');
         token = newJWT(username);
         console.log('token: ' + token);
         response = {result: true, token};
@@ -103,36 +110,37 @@ app.post('/api/signup', function (req, res) {
   let password = req.body.password;
   let hash = bcrypt.hashSync(password, 5);  
   let datetime = Date.now();
-  
+
   console.log(username);
-  console.log(datetime);  
-  console.log(typeof(hash));
+  console.log(datetime);
 
   // Check empty username
   if (username == undefined) {
+    console.log('Username is empty');
     res.json({result: false, reason: 'emptyUsername'});
   }
   // Check empty password
   if (password == undefined) {
+    console.log('Password is empty');
     res.json({result: false, reason: 'emptyPassword'});
   }
 
   db.get(`SELECT usrn FROM user_acc WHERE usrn="${username}"`, function(err, row) {
-    console.log('row: ' + row);
     // Check if username is already used
     if (row != undefined) {
-      res.json({result: false, reason: 'alreadyExists'});
+      console.log('Username already exists');
+      res.json({result: false, reason: 'usernameExists'});
     }
     // Otherwise, create a new account
     db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES 
     ("${username}", "${hash}", "${datetime}", "${datetime}")`, function (err) {
+      console.log('Username created');
       res.json({result: true});
     });
   });
 });
 
 app.post('/api/create', function (req, res) {
-  console.log('\n/api/create POST');
   function note_tag_link(db, noteId, tagId) {
     db.run(`INSERT INTO notes_tags(notes_id, tags_id) VALUES (?, ?)`,
       [noteId, tagId], function (err) {
@@ -141,16 +149,26 @@ app.post('/api/create', function (req, res) {
       });
   }
 
-  let db = new sqlite3.Database('note.db');
+  console.log('\n/api/create POST');  
 
   let content = req.body.content;
-  let tagsString = req.body.tags;
-  let datetime = new Date();
+  let tagsString = req.body.tags;  
+  let token = req.body.token;
+  let datetime = Date.now();
+
+  username = verifyJWT(token);
+  if (username == false) {
+    res.redirect('/login');
+  }
+
+  let db = new sqlite3.Database('note.db');
+
+  
 
   let tags = tagsString.split(','); //new RegExp("/ *[,.;] *")
 
-  db.run(`INSERT INTO notes(content, creation, lastupdated) VALUES (?, ?, ?)`,
-    [content, datetime, datetime], function (err) {
+  db.run(`INSERT INTO notes(user_acc_id, content, creation, lastupdated)
+  VALUES (${7}, ${content}, ${datetime}, ${datetime})`, function (err) {
       if (err) { console.error(err.message); }
       let noteId = this.lastID;
       console.log('noteId: ' + noteId);
@@ -218,9 +236,9 @@ app.get('/api/read', function (req, res) {
             init = rows[i].id;
             note = {
               id: rows[i].id,
-              content: rows[i].content,
-              datetime: rows[i].lastupdated,
               tags: [rows[i].tag],
+              content: rows[i].content,
+              lastupdated: rows[i].lastupdated,              
             };
           }
           else if (init == rows[i].id) {
@@ -246,7 +264,7 @@ app.get('/api/read', function (req, res) {
         let note = {
           id: rows[0].id,
           content: rows[0].content,
-          datetime: rows[0].lastupdated,
+          lastupdated: rows[0].lastupdated,
           tags: [],
         };
         for (let i = 0; i < rows.length; i++) {

@@ -9,7 +9,10 @@ function login() {
         console.log('result: ' + data.result);
         if (data.reason) console.log('reason: ' + data.reason);
         if (data.token) console.log('token: ' + data.token);
-        localStorage.setItem('token', data.token);
+        if (data.result == true) {
+            localStorage.setItem('token', data.token);
+            window.location.href('../');
+        }
     });
 }
 
