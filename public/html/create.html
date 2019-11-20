@@ -11,13 +11,12 @@
   <body>
     <h1>noteKeeper</h1>
     <h2>Create</h2>
-    <form action="/api/create" method="post">
+    <form onSubmit="return create()">
         Content: <br>
-        <textarea name="content"></textarea> <br>
+        <textarea id="note" name="content"></textarea> <br>
         Tags: <br>
-        <input type="text" name="tags"> <br>
-        <input type="hidden" id="red" name="red" value="true">
-        <input type="submit" value="Send">
+        <input id="tags" type="text" name="tags"> <br>
+        <input type="submit" value="Update">
     </form>
   </body>
 </html>

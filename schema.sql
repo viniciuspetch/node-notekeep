@@ -10,7 +10,7 @@ CREATE TABLE
 CREATE TABLE
     notes (
         id integer primary key,
-        user_acc_id integer not null,
+        user_id integer not null,
         content text not null,
         creation integer not null,
         lastupdated integer not null,
