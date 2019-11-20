@@ -125,7 +125,8 @@ app.post('/api/signup', function (req, res) {
     res.json({result: false, reason: 'emptyPassword'});
   }
 
-  db.get(`SELECT usrn FROM user_acc WHERE usrn="${username}"`, function(err, row) {
+  db.get(`SELECT usrn FROM user_acc WHERE usrn="${username}"`,
+  function(err, row) {
     // Check if username is already used
     if (row != undefined) {
       console.log('Username already exists');
@@ -157,72 +158,84 @@ app.post('/api/create', function (req, res) {
   let datetime = Date.now();
 
   username = verifyJWT(token);
+  if (token == null) {
+    console.log('Token needed');
+    res.json({result: false, status: 'Token needed'});
+  }
   if (username == false) {
     console.log('No username found');
     res.redirect('/login');
   }
-  console.log('Token verified');
+  else {
+    console.log('Token verified');
 
-  let db = new sqlite3.Database('note.db');
-
-  // Searching for user with this username
-  db.get(`SELECT id FROM user_acc WHERE usrn = ${username}`,
-  function (err, row) {
-    if (row == undefined) {
-      console.log('No user found');
-      res.redirect('/login');
-    }
-    console.log('User found');
-    let user_acc_id = row.id;
-    console.log(user_acc_id);
-    let tags = tagsString.split(','); //new RegExp("/ *[,.;] *")
-
-    // Inserting note into DB
-    db.run(`INSERT INTO notes(user_acc_id, content, creation, lastupdated)
-    VALUES (${user_acc_id}, ${content}, ${datetime}, ${datetime})`, function (err) {
-      if (err) {
-        console.error(err.message);
-      }      
-      let noteId = this.lastID;
-      console.log('noteId: ' + noteId);
+    let db = new sqlite3.Database('note.db');
   
-      if (noteId != null) {
-        console.log('Note created');
-        console.log('Adding tags');
-        for (i in tags) {
-          tag = tags[i];
-          console.log('tag: ' + tag);
-          db.all(`SELECT * FROM tags WHERE tag = ?`, [tag],
-          function (err, rows) {
-            if (err) { console.error(err.message); }
-            if (rows.length == 0) {
-              db.run(`INSERT INTO tags(tag) VALUES (?)`, [tag],
-              function (err) {
-                if (err) { console.error(err.message); }
-                console.log('tag ' + tag + ' created');
-                note_tag_link(db, noteId, this.lastID);
+    // Searching for user with this username
+    db.get(`SELECT id FROM user_acc WHERE usrn = ${username}`,
+    function (err, row) {
+      if (row == undefined) {
+        console.log('No user found');
+        res.redirect('/login');
+      }
+      else {
+        console.log('User found');
+        let user_acc_id = row.id;
+        console.log(user_acc_id);
+        let tags = tagsString.split(','); //new RegExp("/ *[,.;] *")
+    
+        // Inserting note into DB
+        db.run(`INSERT INTO notes(user_acc_id, content, creation, lastupdated)
+        VALUES (${user_acc_id}, ${content}, ${datetime}, ${datetime})`,
+        function (err) {
+          if (err) {
+            console.error(err.message);
+          }
+          let noteId = this.lastID;
+          console.log('noteId: ' + noteId);
+      
+          if (noteId != null) {
+            console.log('Note created');
+            console.log('Adding tags');
+            for (i in tags) {
+              tag = tags[i];
+              console.log('tag: ' + tag);
+
+              db.all(`SELECT * FROM tags WHERE tag = ?`, [tag],
+              function (err, rows) {
+                if (err) {
+                  console.error(err.message);
+                }
+
+                if (rows.length == 0) {
+                  db.run(`INSERT INTO tags(tag) VALUES (?)`, [tag],
+                  function (err) {
+                    if (err) { console.error(err.message); }
+                    console.log('tag ' + tag + ' created');
+                    note_tag_link(db, noteId, this.lastID);
+                  });
+                }
+                else {
+                  console.log('tag ' + tag + ' already exists');
+                  note_tag_link(db, noteId, rows[0].id);
+                }
               });
             }
-            else {
-              console.log('tag ' + tag + ' already exists');
-              note_tag_link(db, noteId, rows[0].id);
-            }
-          });
-        }
-      }
+          }
+          // TODO: Change it so it'll always return an JSON response, leave the redirect
+          // to the client-side
+          // Redirect if a website is using the API
+          if (req.body.red = true) {
+            res.redirect('/read');
+          }
+          // Return response otherwise
+          else {
+            res.json({status: true});
+          }
+        });
+      }      
     });
-  });
-
-  // TODO: Change it so it'll always return an JSON response, leave the redirect
-  // to the client-side
-  // Redirect if a website is using the API
-  if (req.body.red = true) {
-    res.redirect('/read');
-  }
-  // Return response otherwise
-  else {
-    res.json({status: true});
-  }
+  }  
 });
 
 app.get('/api/read', function (req, res) {
