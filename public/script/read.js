@@ -4,7 +4,7 @@ $(function() {
     
     token = localStorage.getItem('token');
     data = {token};
-    $.get("http://localhost:8000/api/read", data, (response) => {
+    $.post("http://localhost:8000/api/read", data, (response) => {
         console.log(response);
         for (let i = 0; i < response.length; i++) {
             console.log(response[i]);

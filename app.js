@@ -13,6 +13,9 @@ function newJWT(username) {
 
 function verifyJWT(token) {
   let verifiedToken;
+  if (token == null) {
+    return false;
+  }
   try {
     verifiedToken = jwt.verify(token, jwtSecret);
     return verifiedToken;
@@ -299,6 +302,94 @@ app.get('/api/read', function (req, res) {
         res.send(note);
       });
   }
+});
+
+app.post('/api/read', function (req, res) {
+  console.log('\n/api/read POST');
+
+  let db = new sqlite3.Database('note.db');
+  let id = req.body.id;
+  let token = req.body.token;
+
+  if (token == null) {
+    console.log('Token not found');
+    username = null;
+  }
+  else {
+    username = verifyJWT(token);
+  }
+  if (username == false) {
+    console.log('No username found');
+    res.redirect('/login');
+  }
+  else {
+    db.get(`SELECT id FROM user_acc WHERE usrn = "${username.username}"`,
+    function (err, row) {
+      if (row == undefined) {
+        console.log('No user found');
+        res.json({result: false, status: 'userNotFound'});
+      }
+      else {
+        let userid = row.id;
+        console.log('id: ' + id);
+        console.log('token:' + token);
+        console.log('username: ' + username.username);
+        console.log('userid: ' + userid);
+    
+        if (id === undefined) {
+          db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag
+          FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id
+          LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = 
+          ${userid} ORDER BY notes.id`, function (err, rows) {
+            console.log(rows);
+            let init = null;
+            let noteList = [];
+            let note;
+            for (let i = 0; i < rows.length; i++) {
+              if (init == null) {
+                init = rows[i].id;
+                note = {
+                  id: rows[i].id,
+                  tags: [rows[i].tag],
+                  content: rows[i].content,
+                  lastupdated: rows[i].lastupdated,              
+                };
+              }
+              else if (init == rows[i].id) {
+                note.tags.push(rows[i].tag);
+              }
+              else {
+                init = null;
+                noteList.push(note);
+                i--;
+              }
+            }
+            noteList.push(note);
+            console.log(noteList);
+            res.send(noteList);
+          });
+        }
+        else {
+          db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag
+          FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id
+          LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.id = ?`,
+          [id], function (err, rows) {
+            console.log(rows);
+            let note = {
+              id: rows[0].id,
+              content: rows[0].content,
+              lastupdated: rows[0].lastupdated,
+              tags: [],
+            };
+            for (let i = 0; i < rows.length; i++) {
+              note.tags.push(rows[i].tag);
+            }
+            res.send(note);
+          });
+        }
+      }
+    });
+  }  
 });
 
 app.post('/api/edit', function (req, res) {
