@@ -11,7 +11,7 @@ function login() {
         if (data.token) console.log('token: ' + data.token);
         if (data.result == true) {
             localStorage.setItem('token', data.token);
-            window.location.href('../');
+            window.location.href = '../';
         }
     });
 }
