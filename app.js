@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 const jwtSecret = 'nodejs';
-const bcryptSecret = 'password';
 
 function newJWT(username) {
   return jwt.sign({
@@ -13,7 +12,7 @@ function newJWT(username) {
   }, jwtSecret, {
     expiresIn: '24h'
   });
-};
+}
 
 function verifyJWT(token) {
   let verifiedToken;
@@ -27,7 +26,7 @@ function verifyJWT(token) {
     console.log(err);
     return false;
   }
-};
+}
 
 let webGetLogin = function (req, res) {
   console.log('\n/login GET');
@@ -64,13 +63,13 @@ let webPostLogin = function (req, res) {
       console.log('Username found');
       let hash = row.pswd;
       console.log('hash: ' + hash);
-      compareRes = bcrypt.compareSync(password, hash);
+      let compareRes = bcrypt.compareSync(password, hash);
       console.log(compareRes);
       if (compareRes == true) {
         console.log('Username verified');
-        token = newJWT(username);
+        let token = newJWT(username);
         console.log('token: ' + token);
-        response = {
+        let response = {
           result: true,
           token
         };
@@ -102,7 +101,6 @@ let webGetRead = function (req, res) {
 
 let webGetEdit = function (req, res) {
   console.log('\n/edit/:id GET');
-  let id = req.params.id;
   res.sendFile(__dirname + '/public/html/edit.html');
 };
 
@@ -148,7 +146,7 @@ let apiPostSignup = function (req, res) {
       }
       // Otherwise, create a new account
       db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES 
-    ("${username}", "${hash}", "${datetime}", "${datetime}")`, function (err) {
+    ("${username}", "${hash}", "${datetime}", "${datetime}")`, function () {
         console.log('Username created');
         res.json({
           result: true
@@ -183,7 +181,7 @@ let apiPostCreate = function (req, res) {
       status: 'Token needed'
     });
   } else {
-    username = verifyJWT(token);
+    let username = verifyJWT(token);
     if (username == false) {
       console.log('No username found');
       res.redirect('/login');
@@ -218,8 +216,8 @@ let apiPostCreate = function (req, res) {
                 if (noteId != null) {
                   console.log('Note created');
                   console.log('Adding tags');
-                  for (i in tags) {
-                    tag = tags[i];
+                  for (let i in tags) {
+                    let tag = tags[i];
                     console.log('tag: ' + tag);
 
                     db.all(`SELECT * FROM tags WHERE tag = ?`, [tag],
@@ -260,7 +258,7 @@ let apiPostRead = function (req, res) {
   let db = new sqlite3.Database('note.db');
   let id = req.body.id;
   let token = req.body.token;
-
+  let username = null;
   if (token == null) {
     console.log('Token not found');
     username = null;
@@ -356,7 +354,7 @@ let apiPostEdit = function (req, res) {
   db.all(`SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags
     ON notes_tags.tags_id = tags.id WHERE notes_tags.notes_id = ?`, [id],
     function (err, rows) {
-      oldTags = [];
+      let oldTags = [];
       for (let i = 0; i < rows.length; i++) {
         oldTags.push(rows[i].tag);
       }
@@ -365,8 +363,8 @@ let apiPostEdit = function (req, res) {
         if (newTags[i] != null && newTags[i] != '' && oldTags.indexOf(newTags[i]) == -1) {
           console.log('insert -> ' + newTags[i]);
           db.run(`INSERT INTO tags(tag) VALUES (?)`, [newTags[i]],
-            function (err) {
-              newTagId = this.lastID;
+            function () {
+              let newTagId = this.lastID;
               db.run(`INSERT INTO notes_tags(notes_id, tags_id)
                     VALUES (?, ?)`, [id, newTagId]);
             })
@@ -382,13 +380,9 @@ let apiPostEdit = function (req, res) {
     })
   db.run(`UPDATE notes SET content = ? WHERE id = ?`, [content, id]);
 
-  if (req.body.red = true) {
-    res.redirect('/read');
-  } else {
-    res.json({
-      status: 'Ok'
-    });
-  }
+  res.json({
+    status: 'Ok'
+  });
 };
 
 let apiGetDelete = function (req, res) {
@@ -398,9 +392,9 @@ let apiGetDelete = function (req, res) {
   let db = new sqlite3.Database('note.db');
   let id = req.params.id;
 
-  db.run(`DELETE FROM notes WHERE id = ?`, [id], function (err) {
+  db.run(`DELETE FROM notes WHERE id = ?`, [id], function () {
     db.run(`DELETE FROM notes_tags WHERE notes_id = ?`, [id],
-      function (err) {
+      function () {
         res.redirect('/read');
       });
   });
