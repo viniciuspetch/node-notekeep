@@ -8,7 +8,11 @@ const jwtSecret = 'nodejs';
 const bcryptSecret = 'password';
 
 function newJWT(username) {
-  return jwt.sign({ username: username }, jwtSecret, { expiresIn: '24h' });
+  return jwt.sign({
+    username: username
+  }, jwtSecret, {
+    expiresIn: '24h'
+  });
 };
 
 function verifyJWT(token) {
@@ -50,11 +54,11 @@ let webPostLogin = function (req, res) {
 
   let db = new sqlite3.Database('note.db');
   let username = req.body.username;
-  let password = req.body.password;  
+  let password = req.body.password;
   console.log('username: ' + username);
   console.log('password: ' + password);
 
-  db.get(`SELECT pswd FROM user_acc WHERE usrn="${username}"`, function(err, row) {
+  db.get(`SELECT pswd FROM user_acc WHERE usrn="${username}"`, function (err, row) {
     // Check if username exists
     if (row != undefined) {
       console.log('Username found');
@@ -66,20 +70,29 @@ let webPostLogin = function (req, res) {
         console.log('Username verified');
         token = newJWT(username);
         console.log('token: ' + token);
-        response = {result: true, token};
+        response = {
+          result: true,
+          token
+        };
         res.json(response);
       } else {
-        res.json({result: false, reason: 'wrongPassword'});
+        res.json({
+          result: false,
+          reason: 'wrongPassword'
+        });
       }
     } else {
-      res.json({result: false, reason: 'usernameNotFound'});
+      res.json({
+        result: false,
+        reason: 'usernameNotFound'
+      });
     }
   });
 };
 
 let webGetCreate = function (req, res) {
-    console.log('\n/create GET');
-    res.sendFile(__dirname + '/public/html/create.html');
+  console.log('\n/create GET');
+  res.sendFile(__dirname + '/public/html/create.html');
 };
 
 let webGetRead = function (req, res) {
@@ -100,7 +113,7 @@ let apiPostSignup = function (req, res) {
   let db = new sqlite3.Database('note.db');
   let username = req.body.username;
   let password = req.body.password;
-  let hash = bcrypt.hashSync(password, 5);  
+  let hash = bcrypt.hashSync(password, 5);
   let datetime = Date.now();
 
   console.log(username);
@@ -109,117 +122,134 @@ let apiPostSignup = function (req, res) {
   // Check empty username
   if (username == undefined) {
     console.log('Username is empty');
-    res.json({result: false, reason: 'emptyUsername'});
+    res.json({
+      result: false,
+      reason: 'emptyUsername'
+    });
   }
   // Check empty password
   if (password == undefined) {
     console.log('Password is empty');
-    res.json({result: false, reason: 'emptyPassword'});
+    res.json({
+      result: false,
+      reason: 'emptyPassword'
+    });
   }
 
   db.get(`SELECT usrn FROM user_acc WHERE usrn="${username}"`,
-  function(err, row) {
-    // Check if username is already used
-    if (row != undefined) {
-      console.log('Username already exists');
-      res.json({result: false, reason: 'usernameExists'});
-    }
-    // Otherwise, create a new account
-    db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES 
+    function (err, row) {
+      // Check if username is already used
+      if (row != undefined) {
+        console.log('Username already exists');
+        res.json({
+          result: false,
+          reason: 'usernameExists'
+        });
+      }
+      // Otherwise, create a new account
+      db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES 
     ("${username}", "${hash}", "${datetime}", "${datetime}")`, function (err) {
-      console.log('Username created');
-      res.json({result: true});
+        console.log('Username created');
+        res.json({
+          result: true
+        });
+      });
     });
-  });
 };
 
 let apiPostCreate = function (req, res) {
   function note_tag_link(db, noteId, tagId) {
     db.run(`INSERT INTO notes_tags(notes_id, tags_id) VALUES (?, ?)`,
-      [noteId, tagId], function (err) {
-        if (err) { console.error(err.message); }
+      [noteId, tagId],
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
         console.log('tagId ' + tagId + ' added to noteId ' + noteId);
       });
   }
 
-  console.log('\n/api/create POST');  
+  console.log('\n/api/create POST');
 
   let content = req.body.content;
-  let tagsString = req.body.tags;  
+  let tagsString = req.body.tags;
   let token = req.body.token;
   let datetime = Date.now();
-  
+
   if (token == null) {
     console.log('Token needed');
-    res.json({result: false, status: 'Token needed'});
-  }
-  else {
+    res.json({
+      result: false,
+      status: 'Token needed'
+    });
+  } else {
     username = verifyJWT(token);
     if (username == false) {
       console.log('No username found');
       res.redirect('/login');
-    }
-    else {
+    } else {
       console.log('Token verified');
       console.log('username: ' + username.username);
-  
+
       let db = new sqlite3.Database('note.db');
-    
+
       // Searching for user with this username
       db.get(`SELECT id FROM user_acc WHERE usrn = "${username.username}"`,
-      function (err, row) {
-        if (row == undefined) {
-          console.log('No user found');
-          res.redirect('/login');
-        }
-        else {
-          console.log('User found');
-          let user_acc_id = row.id;
-          console.log(user_acc_id);
-          let tags = tagsString.split(','); //new RegExp("/ *[,.;] *")
-      
-          // Inserting note into DB
-          db.run(`INSERT INTO notes(user_id, content, creation, lastupdated)
+        function (err, row) {
+          if (row == undefined) {
+            console.log('No user found');
+            res.redirect('/login');
+          } else {
+            console.log('User found');
+            let user_acc_id = row.id;
+            console.log(user_acc_id);
+            let tags = tagsString.split(','); //new RegExp("/ *[,.;] *")
+
+            // Inserting note into DB
+            db.run(`INSERT INTO notes(user_id, content, creation, lastupdated)
           VALUES ("${user_acc_id}", "${content}", "${datetime}", "${datetime}")`,
-          function (err) {
-            if (err) {
-              console.error(err.message);
-            }
-            let noteId = this.lastID;
-            console.log('noteId: ' + noteId);
-        
-            if (noteId != null) {
-              console.log('Note created');
-              console.log('Adding tags');
-              for (i in tags) {
-                tag = tags[i];
-                console.log('tag: ' + tag);
-  
-                db.all(`SELECT * FROM tags WHERE tag = ?`, [tag],
-                function (err, rows) {
-                  if (err) {
-                    console.error(err.message);
+              function (err) {
+                if (err) {
+                  console.error(err.message);
+                }
+                let noteId = this.lastID;
+                console.log('noteId: ' + noteId);
+
+                if (noteId != null) {
+                  console.log('Note created');
+                  console.log('Adding tags');
+                  for (i in tags) {
+                    tag = tags[i];
+                    console.log('tag: ' + tag);
+
+                    db.all(`SELECT * FROM tags WHERE tag = ?`, [tag],
+                      function (err, rows) {
+                        if (err) {
+                          console.error(err.message);
+                        }
+
+                        if (rows.length == 0) {
+                          db.run(`INSERT INTO tags(tag) VALUES (?)`, [tag],
+                            function (err) {
+                              if (err) {
+                                console.error(err.message);
+                              }
+                              console.log('tag ' + tag + ' created');
+                              note_tag_link(db, noteId, this.lastID);
+                            });
+                        } else {
+                          console.log('tag ' + tag + ' already exists');
+                          note_tag_link(db, noteId, rows[0].id);
+                        }
+                      });
                   }
-  
-                  if (rows.length == 0) {
-                    db.run(`INSERT INTO tags(tag) VALUES (?)`, [tag],
-                    function (err) {
-                      if (err) { console.error(err.message); }
-                      console.log('tag ' + tag + ' created');
-                      note_tag_link(db, noteId, this.lastID);
-                    });
-                  }
-                  else {
-                    console.log('tag ' + tag + ' already exists');
-                    note_tag_link(db, noteId, rows[0].id);
-                  }
+                }
+                res.json({
+                  result: true
                 });
-              }
-            }
-            res.json({result: true});
-          });
-        }      
-      });
+              });
+          }
+        });
     }
   }
 };
@@ -234,82 +264,80 @@ let apiPostRead = function (req, res) {
   if (token == null) {
     console.log('Token not found');
     username = null;
-  }
-  else {
+  } else {
     username = verifyJWT(token);
   }
   if (username == false) {
     console.log('No username found');
     res.redirect('/login');
-  }
-  else {
+  } else {
     db.get(`SELECT id FROM user_acc WHERE usrn = "${username.username}"`,
-    function (err, row) {
-      if (row == undefined) {
-        console.log('No user found');
-        res.json({result: false, status: 'userNotFound'});
-      }
-      else {
-        let userid = row.id;
-        console.log('id: ' + id);
-        console.log('token:' + token);
-        console.log('username: ' + username.username);
-        console.log('userid: ' + userid);
-    
-        if (id === undefined) {
-          db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag
+      function (err, row) {
+        if (row == undefined) {
+          console.log('No user found');
+          res.json({
+            result: false,
+            status: 'userNotFound'
+          });
+        } else {
+          let userid = row.id;
+          console.log('id: ' + id);
+          console.log('token:' + token);
+          console.log('username: ' + username.username);
+          console.log('userid: ' + userid);
+
+          if (id === undefined) {
+            db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag
           FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id
           LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = 
           ${userid} ORDER BY notes.id`, function (err, rows) {
-            console.log(rows);
-            let init = null;
-            let noteList = [];
-            let note;
-            for (let i = 0; i < rows.length; i++) {
-              if (init == null) {
-                init = rows[i].id;
-                note = {
-                  id: rows[i].id,
-                  tags: [rows[i].tag],
-                  content: rows[i].content,
-                  lastupdated: rows[i].lastupdated,              
-                };
+              console.log(rows);
+              let init = null;
+              let noteList = [];
+              let note;
+              for (let i = 0; i < rows.length; i++) {
+                if (init == null) {
+                  init = rows[i].id;
+                  note = {
+                    id: rows[i].id,
+                    tags: [rows[i].tag],
+                    content: rows[i].content,
+                    lastupdated: rows[i].lastupdated,
+                  };
+                } else if (init == rows[i].id) {
+                  note.tags.push(rows[i].tag);
+                } else {
+                  init = null;
+                  noteList.push(note);
+                  i--;
+                }
               }
-              else if (init == rows[i].id) {
-                note.tags.push(rows[i].tag);
-              }
-              else {
-                init = null;
-                noteList.push(note);
-                i--;
-              }
-            }
-            noteList.push(note);
-            console.log(noteList);
-            res.send(noteList);
-          });
-        }
-        else {
-          db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag
+              noteList.push(note);
+              console.log(noteList);
+              res.send(noteList);
+            });
+          } else {
+            db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag
           FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id
           LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.id = ?`,
-          [id], function (err, rows) {
-            console.log(rows);
-            let note = {
-              id: rows[0].id,
-              content: rows[0].content,
-              lastupdated: rows[0].lastupdated,
-              tags: [],
-            };
-            for (let i = 0; i < rows.length; i++) {
-              note.tags.push(rows[i].tag);
-            }
-            res.send(note);
-          });
+              [id],
+              function (err, rows) {
+                console.log(rows);
+                let note = {
+                  id: rows[0].id,
+                  content: rows[0].content,
+                  lastupdated: rows[0].lastupdated,
+                  tags: [],
+                };
+                for (let i = 0; i < rows.length; i++) {
+                  note.tags.push(rows[i].tag);
+                }
+                res.send(note);
+              });
+          }
         }
-      }
-    });
-  }  
+      });
+  }
 };
 
 let apiPostEdit = function (req, res) {
@@ -356,9 +384,10 @@ let apiPostEdit = function (req, res) {
 
   if (req.body.red = true) {
     res.redirect('/read');
-  }
-  else {
-    res.json({status: 'Ok'});
+  } else {
+    res.json({
+      status: 'Ok'
+    });
   }
 };
 
@@ -381,7 +410,9 @@ let app = express();
 
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
 
 app.get('/', webGetIndex);
 app.get('/login', webGetLogin);
