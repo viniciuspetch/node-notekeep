@@ -9,7 +9,7 @@ const bcryptSecret = 'password';
 
 function newJWT(username) {
   return jwt.sign({ username: username }, jwtSecret, { expiresIn: '24h' });
-}
+};
 
 function verifyJWT(token) {
   let verifiedToken;
@@ -23,30 +23,29 @@ function verifyJWT(token) {
     console.log(err);
     return false;
   }
-}
+};
 
-let app = express();
-
-app.use(express.static(__dirname + '/public'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-
-app.get('/login', function (req, res) {
+let webGetLogin = function (req, res) {
   console.log('\n/login GET');
   res.sendFile(__dirname + '/public/html/login.html');
-});
+};
 
-app.get('/signup', function (req, res) {
+let webGetSignup = function (req, res) {
   console.log('\n/signup GET');
   res.sendFile(__dirname + '/public/html/signup.html');
-});
+};
 
-app.get('/signout', function (req, res) {
+let webGetSignout = function (req, res) {
   console.log('\n/signout GET');
   res.sendFile(__dirname + '/public/html/signout.html');
-})
+};
 
-app.post('/login', (req, res) => {
+let webGetIndex = function (req, res) {
+  console.log('\n/index GET');
+  res.sendFile(__dirname + '/public/html/index.html');
+};
+
+let webPostLogin = function (req, res) {
   console.log('\n/login POST');
 
   let db = new sqlite3.Database('note.db');
@@ -76,35 +75,25 @@ app.post('/login', (req, res) => {
       res.json({result: false, reason: 'usernameNotFound'});
     }
   });
-});
+};
 
-app.get('/', function (req, res) {
-  console.log('\n/index GET');
-  res.sendFile(__dirname + '/public/html/index.html');
-});
+let webGetCreate = function (req, res) {
+    console.log('\n/create GET');
+    res.sendFile(__dirname + '/public/html/create.html');
+};
 
-app.get('/create', function (req, res) {
-  console.log('\n/create GET');
-  res.sendFile(__dirname + '/public/html/create.html');
-});
-
-app.get('/json', function (req, res) {
-  console.log('\n/json GET');
-  res.json({status: true});
-});
-
-app.get('/read', function (req, res) {
+let webGetRead = function (req, res) {
   console.log('\n/read GET');
   res.sendFile(__dirname + '/public//html/read.html');
-});
+};
 
-app.get('/edit/:id', function (req, res) {
+let webGetEdit = function (req, res) {
   console.log('\n/edit/:id GET');
   let id = req.params.id;
   res.sendFile(__dirname + '/public/html/edit.html');
-});
+};
 
-app.post('/api/signup', function (req, res) {
+let apiPostSignup = function (req, res) {
   console.log('\n/api/signup POST');
   console.log(req.body);
 
@@ -142,9 +131,9 @@ app.post('/api/signup', function (req, res) {
       res.json({result: true});
     });
   });
-});
+};
 
-app.post('/api/create', function (req, res) {
+let apiPostCreate = function (req, res) {
   function note_tag_link(db, noteId, tagId) {
     db.run(`INSERT INTO notes_tags(notes_id, tags_id) VALUES (?, ?)`,
       [noteId, tagId], function (err) {
@@ -233,78 +222,9 @@ app.post('/api/create', function (req, res) {
       });
     }
   }
-});
+};
 
-app.get('/api/read', function (req, res) {
-  console.log('\n/api/read GET');
-
-  let db = new sqlite3.Database('note.db');
-  let id = req.query.id;
-  let token = req.query.token;
-
-  username = verifyJWT(token);
-  if (username == false) {
-    res.redirect('/login');
-  }
-
-  console.log('id: ' + id);
-  console.log('token:' + token);
-  console.log('username: ' + username.username);
-
-  if (id === undefined) {
-    db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag
-        FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id
-        LEFT JOIN tags ON notes_tags.tags_id = tags.id ORDER BY notes.id`,
-      function (err, rows) {
-        console.log(rows);
-        let init = null;
-        let noteList = [];
-        let note;
-        for (let i = 0; i < rows.length; i++) {
-          if (init == null) {
-            init = rows[i].id;
-            note = {
-              id: rows[i].id,
-              tags: [rows[i].tag],
-              content: rows[i].content,
-              lastupdated: rows[i].lastupdated,              
-            };
-          }
-          else if (init == rows[i].id) {
-            note.tags.push(rows[i].tag);
-          }
-          else {
-            init = null;
-            noteList.push(note);
-            i--;
-          }
-        }
-        noteList.push(note);
-        console.log(noteList);
-        res.send(noteList);
-      });
-  }
-  else {
-    db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag
-        FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id
-        LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.id = ?`,
-      [id], function (err, rows) {
-        console.log(rows);
-        let note = {
-          id: rows[0].id,
-          content: rows[0].content,
-          lastupdated: rows[0].lastupdated,
-          tags: [],
-        };
-        for (let i = 0; i < rows.length; i++) {
-          note.tags.push(rows[i].tag);
-        }
-        res.send(note);
-      });
-  }
-});
-
-app.post('/api/read', function (req, res) {
+let apiPostRead = function (req, res) {
   console.log('\n/api/read POST');
 
   let db = new sqlite3.Database('note.db');
@@ -390,9 +310,9 @@ app.post('/api/read', function (req, res) {
       }
     });
   }  
-});
+};
 
-app.post('/api/edit', function (req, res) {
+let apiPostEdit = function (req, res) {
   console.log('\n/api/edit POST');
 
   console.log(req.body);
@@ -440,9 +360,9 @@ app.post('/api/edit', function (req, res) {
   else {
     res.json({status: 'Ok'});
   }
-});
+};
 
-app.get('/api/delete/:id', function (req, res) {
+let apiGetDelete = function (req, res) {
   console.log('\n/api/delete GET');
   console.log(req.body);
 
@@ -455,7 +375,28 @@ app.get('/api/delete/:id', function (req, res) {
         res.redirect('/read');
       });
   });
-});
+};
+
+let app = express();
+
+app.use(express.static(__dirname + '/public'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.get('/', webGetIndex);
+app.get('/login', webGetLogin);
+app.post('/login', webPostLogin);
+app.get('/signup', webGetSignup);
+app.get('/signout', webGetSignout);
+app.get('/create', webGetCreate);
+app.get('/read', webGetRead);
+app.get('/edit/:id', webGetEdit);
+
+app.post('/api/signup', apiPostSignup);
+app.post('/api/create', apiPostCreate);
+app.post('/api/read', apiPostRead);
+app.post('/api/edit', apiPostEdit);
+app.get('/api/delete/:id', apiGetDelete);
 
 app.listen(8000, function () {
   console.log('Ready');
