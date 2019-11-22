@@ -146,11 +146,7 @@ let apiPostCreate = function (req, res) {
   }
 
   console.log('\n/api/create POST');
-
-  let content = req.body.content;
-  let tagsString = req.body.tags;
   let token = req.body.token;
-  let datetime = Date.now();
 
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
   let username = jwtResult.username;
@@ -168,23 +164,28 @@ let apiPostCreate = function (req, res) {
       status: 'No username found'
     });
   } else {
-    console.log('username: ' + username.username);
+    console.log('username: ' + username);
 
     let db = new sqlite3.Database('note.db');
 
     // Searching for user with this username
-    db.get(`SELECT id FROM user_acc WHERE usrn = "${username.username}"`, function (err, row) {
+    db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
       if (row == undefined) {
         console.log('No user found');
         res.redirect('/login');
       } else {
-        console.log('User found');
-        let user_acc_id = row.id;
-        console.log(user_acc_id);
-        let tags = tagsString.split(','); //new RegExp("/ *[,.;] *")
+        let userId = row.id;
+        let content = req.body.content;
+        let tags = req.body.tags.split(','); //new RegExp("/ *[,.;] *")     
+        let datetime = Date.now();
+
+        console.log('userId: ' + userId);
+        console.log('content: ' + content);
+        console.log('datetime: ' + datetime);        
+        console.log('tags: ' + tags);
 
         // Inserting note into DB
-        db.run(`INSERT INTO notes(user_id, content, creation, lastupdated VALUES ("${user_acc_id}", "${content}", "${datetime}", "${datetime}")`, function (err) {
+        db.run(`INSERT INTO notes(user_id, content, creation, lastupdated) VALUES (?,?,?,?)`, [userId, content, datetime, datetime], function (err) {
           if (err) {
             console.error(err.message);
           }
@@ -250,7 +251,7 @@ let apiPostRead = function (req, res) {
       status: 'No username found'
     });
   } else {
-    db.get(`SELECT id FROM user_acc WHERE usrn = "${username.username}"`, function (err, row) {
+    db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
       if (row == undefined) {
         console.log('No user found');
         res.json({
@@ -261,7 +262,7 @@ let apiPostRead = function (req, res) {
         let userid = row.id;
         console.log('id: ' + id);
         console.log('token:' + token);
-        console.log('username: ' + username.username);
+        console.log('username: ' + username);
         console.log('userid: ' + userid);
 
         if (id === undefined) {
@@ -321,41 +322,67 @@ let apiPostEdit = function (req, res) {
   let content = req.body.content;
   let tags = req.body.tags;
   let newTags = tags.split(',');
-  console.log('tags: ' + tags);
-  console.log('newTags: ' + newTags);
+  let token = req.body.token;
 
-  db.all(`SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags
-    ON notes_tags.tags_id = tags.id WHERE notes_tags.notes_id = ?`, [id],
-    function (err, rows) {
-      let oldTags = [];
-      for (let i = 0; i < rows.length; i++) {
-        oldTags.push(rows[i].tag);
-      }
-      console.log('oldTags: ' + oldTags);
-      for (let i = 0; i < newTags.length; i++) {
-        if (newTags[i] != null && newTags[i] != '' && oldTags.indexOf(newTags[i]) == -1) {
-          console.log('insert -> ' + newTags[i]);
-          db.run(`INSERT INTO tags(tag) VALUES (?)`, [newTags[i]],
-            function () {
-              let newTagId = this.lastID;
-              db.run(`INSERT INTO notes_tags(notes_id, tags_id)
-                    VALUES (?, ?)`, [id, newTagId]);
-            })
-        }
-      }
-      for (let i = 0; i < oldTags.length; i++) {
-        if (newTags.indexOf(oldTags[i]) == -1) {
-          console.log('remove -> ' + oldTags[i]);
-          db.run(`DELETE FROM notes_tags WHERE notes_id = ? 
-                AND tags_id = ?`, [id, oldTags[i]]);
-        }
-      }
-    })
-  db.run(`UPDATE notes SET content = ? WHERE id = ?`, [content, id]);
+  let jwtResult = jwt.verifyJWT(token, jwtSecret);
+  let username = jwtResult.username;
 
-  res.json({
-    status: 'Ok'
-  });
+  if (jwtResult == null) {
+    console.log('JWT Verification failed');
+    res.json({
+      result: false,
+      status: 'JWT Verification failed'
+    });
+  } else if (jwtResult.username == null) {
+    console.log('No username found');
+    res.json({
+      result: false,
+      status: 'No username found'
+    });
+  } else {
+    db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
+      if (row == undefined) {
+        console.log('No user found');
+        res.json({
+          result: false,
+          status: 'userNotFound'
+        });
+      } else {
+        db.all(`SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags
+        ON notes_tags.tags_id = tags.id WHERE notes_tags.notes_id = ?`, [id],
+          function (err, rows) {
+            let oldTags = [];
+            for (let i = 0; i < rows.length; i++) {
+              oldTags.push(rows[i].tag);
+            }
+            console.log('oldTags: ' + oldTags);
+            for (let i = 0; i < newTags.length; i++) {
+              if (newTags[i] != null && newTags[i] != '' && oldTags.indexOf(newTags[i]) == -1) {
+                console.log('insert -> ' + newTags[i]);
+                db.run(`INSERT INTO tags(tag) VALUES (?)`, [newTags[i]],
+                  function () {
+                    let newTagId = this.lastID;
+                    db.run(`INSERT INTO notes_tags(notes_id, tags_id)
+                        VALUES (?, ?)`, [id, newTagId]);
+                  })
+              }
+            }
+            for (let i = 0; i < oldTags.length; i++) {
+              if (newTags.indexOf(oldTags[i]) == -1) {
+                console.log('remove -> ' + oldTags[i]);
+                db.run(`DELETE FROM notes_tags WHERE notes_id = ? 
+                    AND tags_id = ?`, [id, oldTags[i]]);
+              }
+            }
+          })
+        db.run(`UPDATE notes SET content = ? WHERE id = ?`, [content, id]);
+
+        res.json({
+          status: 'Ok'
+        });
+      }
+    });
+  }
 };
 
 let apiGetDelete = function (req, res) {
