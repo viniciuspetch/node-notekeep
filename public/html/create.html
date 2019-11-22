@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Notekeep</title>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Notekeep</title>
   <style type="text/css">
   </style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script type="text/javascript" src="/script/create.js"></script>
-  </head>
-  <body>
-    <h2>Create a note</h2>
-    <form onSubmit="return create()">
-        Content: <br>
-        <textarea id="note" name="content"></textarea> <br>
-        Tags: <br>
-        <input id="tags" type="text" name="tags"> <br>
-        <input type="submit" value="Update">
-    </form>
-  </body>
+</head>
+
+<body>
+  <p>Create a note</p>
+  <form onSubmit="return create()">
+    Content: <br>
+    <textarea id="note" name="content"></textarea> <br>
+    Tags: <br>
+    <input id="tags" type="text" name="tags"> <br>
+    <input type="submit" value="Create">
+  </form>
+</body>
+
 </html>

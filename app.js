@@ -181,7 +181,7 @@ let apiPostCreate = function (req, res) {
 
         console.log('userId: ' + userId);
         console.log('content: ' + content);
-        console.log('datetime: ' + datetime);        
+        console.log('datetime: ' + datetime);
         console.log('tags: ' + tags);
 
         // Inserting note into DB
@@ -326,7 +326,6 @@ let apiPostEdit = function (req, res) {
 
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
   let username = jwtResult.username;
-
   if (jwtResult == null) {
     console.log('JWT Verification failed');
     res.json({
