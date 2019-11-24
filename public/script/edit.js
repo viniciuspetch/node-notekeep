@@ -1,19 +1,42 @@
-$(function() {
+function edit() {
+    console.log('edit()');
+
+    let url = '/api/edit';
+    let content = $('#content').val();
+    let tags = $('#tags').val();
+    let token = localStorage.getItem('token');
+    let currUrlArray = window.location.href.split('/');
+    let noteId = currUrlArray[currUrlArray.length - 1];
+
+    let input = {content, tags, token, id: noteId};
+    console.log(input);
+
+    $.post(url, input, (output) => {
+        console.log(output);
+        console.log('edit post');
+    })
+
+    return false;
+}
+
+$(function () {
     console.log('edit.js');
     console.log(localStorage.getItem('token'));
-    
-    let url_array = window.location.href.split('/');
-    let url_id = url_array[url_array.length-1];
-    console.log(url_id);
-    let url_final = "http://localhost:8000/api/read?id=" +  url_id;
-    console.log(url_final);
+    let token = localStorage.getItem('token');
 
-    $.ajax({
-        url: url_final,
-    }).then(function(data) {
-        console.log(data);
-        $("#id").val(data.id);
-        $("#content").val(data.content);
-        $("#tags").val(data.tags);
+    let url = '/api/read'
+    let currUrlArray = window.location.href.split('/');
+    let noteId = currUrlArray[currUrlArray.length - 1];
+
+    console.log(noteId);
+
+    $.post(url, {
+        token,
+        noteId
+    }, (data) => {
+        console.log(data[0]);
+
+        $("#content").val(data[0].content);
+        $("#tags").val(data[0].tags);
     });
 });
