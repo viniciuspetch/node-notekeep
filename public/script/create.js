@@ -34,13 +34,15 @@ function create() {
     let tags = $('#tags').val();
     let token = localStorage.getItem('token');
 
-    $.post(url, {
-        content,
-        tags,
-        token
-    }, (data) => {
-        console.log('test');
-    });
+    if (validateNote(content, tags)) {
+        $.post(url, {
+            content,
+            tags,
+            token
+        }, (data) => {
+            console.log('test');
+        });
+    }
 
     return false;
 }
