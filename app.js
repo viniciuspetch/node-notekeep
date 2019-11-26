@@ -112,7 +112,7 @@ let webGetEdit = function (req, res) {
 };
 
 let apiPostSignup = function (req, res) {
-  console.log('\n/api/signup POST');
+  console.log('\nROUTE: /api/signup POST');
   console.log(req.body);
 
   let db = new sqlite3.Database('note.db');
@@ -206,97 +206,112 @@ let apiPostSignup = function (req, res) {
 
 let apiPostCreate = function (req, res) {
   function note_tag_link(db, noteId, tagId) {
-    db.run(`INSERT INTO notes_tags(notes_id, tags_id) VALUES (?, ?)`,
-      [noteId, tagId],
-      function (err) {
-        if (err) {
-          console.error(err.message);
-        }
-        console.log('tagId ' + tagId + ' added to noteId ' + noteId);
-      });
+    db.run(`INSERT INTO notes_tags(notes_id, tags_id) VALUES (?, ?)`, [noteId, tagId], function (err) {
+      if (err) {
+        console.error(err.message);
+      }
+      console.log('tagId ' + tagId + ' added to noteId ' + noteId);
+    });
   }
 
-  console.log('\n/api/create POST');
+  console.log('\nROUTE: /api/create POST');
   let token = req.body.token;
-
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
+
+  if (!jwtResult) {
+    console.log('LOG: JWT Verification failed');
+    res.json({
+      result: false,
+      reason: 'JWTVerificationFailed'
+    });
+    return;
+  }
+
   let username = jwtResult.username;
+  console.log('VAR: username: ' + username);
 
-  if (jwtResult == null) {
-    console.log('JWT Verification failed');
+  if (!username) {
+    console.log('LOG: No username found');
     res.json({
       result: false,
-      status: 'JWT Verification failed'
+      status: 'usernameNotFound'
     });
-  } else if (jwtResult.username == null) {
-    console.log('No username found');
-    res.json({
-      result: false,
-      status: 'No username found'
-    });
-  } else {
-    console.log('username: ' + username);
+    return;
+  }
 
-    let db = new sqlite3.Database('note.db');
+  let db = new sqlite3.Database('note.db');
 
-    // Searching for user with this username
-    db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
-      if (row == undefined) {
-        console.log('No user found');
-        res.redirect('/login');
-      } else {
-        let userId = row.id;
-        let content = req.body.content;
-        let tags = req.body.tags.split(','); //new RegExp("/ *[,.;] *")     
-        let datetime = Date.now();
+  // Searching for user with this username
+  db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
+    if (!row) {
+      console.log('No user found');
+      res.redirect('/login');
+    }
+    let userId = row.id;
+    let content = req.body.content;
+    let tags = req.body.tags.split(','); //new RegExp("/ *[,.;] *")     
+    let datetime = Date.now();
 
-        console.log('userId: ' + userId);
-        console.log('content: ' + content);
-        console.log('datetime: ' + datetime);
-        console.log('tags: ' + tags);
+    // Check for emtpy content
+    if (!content) {
+      console.log('LOG: Note content is empty');
+      res.json({
+        result: false,
+        reason:'contentEmpty'
+      });
+      return;
+    }
+    // Check for tags with invalid characters
+    for (let i = 0; i < tags.length; i++) {
+      if (!isAlphaNumeric(tags[i])) {
+        console.log('LOG: Tag has invalid characters');
+        res.json({
+          result: false,
+          reason:'tagInvalidCharacter'
+        });
+        return;
+      }
+    }
 
-        // Inserting note into DB
-        db.run(`INSERT INTO notes(user_id, content, creation, lastupdated) VALUES (?,?,?,?)`, [userId, content, datetime, datetime], function (err) {
-          if (err) {
-            console.error(err.message);
-          }
-          let noteId = this.lastID;
-          console.log('noteId: ' + noteId);
+    console.log('userId: ' + userId);
+    console.log('content: ' + content);
+    console.log('datetime: ' + datetime);
+    console.log('tags: ' + tags);
 
-          if (noteId != null) {
-            console.log('Note created');
-            console.log('Adding tags');
-            for (let i in tags) {
-              let tag = tags[i];
-              console.log('tag: ' + tag);
+    // Inserting note into DB
+    db.run(`INSERT INTO notes(user_id, content, creation, lastupdated) VALUES (?,?,?,?)`, [userId, content, datetime, datetime], function (err) {
+      let noteId = this.lastID;
+      console.log('noteId: ' + noteId);
 
-              db.all(`SELECT * FROM tags WHERE tag = ?`, [tag], function (err, rows) {
+      if (noteId != null) {
+        console.log('Note created');
+        console.log('Adding tags');
+        for (let i in tags) {
+          let tag = tags[i];
+          console.log('tag: ' + tag);
+
+          db.all(`SELECT * FROM tags WHERE tag = ?`, [tag], function (err, rows) {
+            if (rows.length == 0) {
+              db.run(`INSERT INTO tags(tag) VALUES (?)`, [tag], function (err) {
                 if (err) {
                   console.error(err.message);
                 }
-
-                if (rows.length == 0) {
-                  db.run(`INSERT INTO tags(tag) VALUES (?)`, [tag], function (err) {
-                    if (err) {
-                      console.error(err.message);
-                    }
-                    console.log('tag ' + tag + ' created');
-                    note_tag_link(db, noteId, this.lastID);
-                  });
-                } else {
-                  console.log('tag ' + tag + ' already exists');
-                  note_tag_link(db, noteId, rows[0].id);
-                }
+                console.log('tag ' + tag + ' created');
+                note_tag_link(db, noteId, this.lastID);
               });
+            } else {
+              console.log('tag ' + tag + ' already exists');
+              note_tag_link(db, noteId, rows[0].id);
             }
-          }
-          res.json({
-            result: true
           });
-        });
+        }
       }
+      res.json({
+        result: true
+      });
+      return;
     });
-  }
+  });
 }
 
 let apiPostRead = function (req, res) {
