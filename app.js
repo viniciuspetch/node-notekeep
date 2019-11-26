@@ -257,7 +257,7 @@ let apiPostCreate = function (req, res) {
       console.log('LOG: Note content is empty');
       res.json({
         result: false,
-        reason:'contentEmpty'
+        reason: 'contentEmpty'
       });
       return;
     }
@@ -267,7 +267,7 @@ let apiPostCreate = function (req, res) {
         console.log('LOG: Tag has invalid characters');
         res.json({
           result: false,
-          reason:'tagInvalidCharacter'
+          reason: 'tagInvalidCharacter'
         });
         return;
       }
@@ -324,78 +324,81 @@ let apiPostRead = function (req, res) {
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
   let username = jwtResult.username;
 
-  if (jwtResult == null) {
+  if (!jwtResult) {
     console.log('JWT Verification failed');
     res.json({
       result: false,
       status: 'JWT Verification failed'
     });
-  } else if (jwtResult.username == null) {
+    return;
+  }
+  if (!username) {
     console.log('No username found');
     res.json({
       result: false,
       status: 'No username found'
     });
-  } else {
-    db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
-      if (row == undefined) {
-        console.log('No user found');
-        res.json({
-          result: false,
-          status: 'userNotFound'
-        });
-      } else {
-        let userid = row.id;
-        console.log('id: ' + id);
-        console.log('token:' + token);
-        console.log('username: ' + username);
-        console.log('userid: ' + userid);
-
-        if (id === undefined) {
-          db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = ${userid} ORDER BY notes.id`, function (err, rows) {
-            console.log(rows);
-            let init = null;
-            let noteList = [];
-            let note;
-            for (let i = 0; i < rows.length; i++) {
-              if (init == null) {
-                init = rows[i].id;
-                note = {
-                  id: rows[i].id,
-                  tags: [rows[i].tag],
-                  content: rows[i].content,
-                  lastupdated: rows[i].lastupdated,
-                };
-              } else if (init == rows[i].id) {
-                note.tags.push(rows[i].tag);
-              } else {
-                init = null;
-                noteList.push(note);
-                i--;
-              }
-            }
-            noteList.push(note);
-            console.log(noteList);
-            res.send(noteList);
-          });
-        } else {
-          db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.id = ?`, [id], function (err, rows) {
-            console.log(rows);
-            let note = {
-              id: rows[0].id,
-              content: rows[0].content,
-              lastupdated: rows[0].lastupdated,
-              tags: [],
-            };
-            for (let i = 0; i < rows.length; i++) {
-              note.tags.push(rows[i].tag);
-            }
-            res.send(note);
-          });
-        }
-      }
-    });
+    return;
   }
+  db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
+    if (row == undefined) {
+      console.log('No user found');
+      res.json({
+        result: false,
+        status: 'userNotFound'
+      });
+      return;
+    }
+    let userid = row.id;
+    console.log('id: ' + id);
+    console.log('token:' + token);
+    console.log('username: ' + username);
+    console.log('userid: ' + userid);
+
+    if (id === undefined) {
+      db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = ${userid} ORDER BY notes.id`, function (err, rows) {
+        console.log(rows);
+        let init = null;
+        let noteList = [];
+        let note;
+        for (let i = 0; i < rows.length; i++) {
+          if (init == null) {
+            init = rows[i].id;
+            note = {
+              id: rows[i].id,
+              tags: [rows[i].tag],
+              content: rows[i].content,
+              lastupdated: rows[i].lastupdated,
+            };
+          } else if (init == rows[i].id) {
+            note.tags.push(rows[i].tag);
+          } else {
+            init = null;
+            noteList.push(note);
+            i--;
+          }
+        }
+        noteList.push(note);
+        console.log(noteList);
+        res.send(noteList);
+      });
+    } else {
+      db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.id = ?`, [id], function (err, rows) {
+        console.log(rows);
+        let note = {
+          id: rows[0].id,
+          content: rows[0].content,
+          lastupdated: rows[0].lastupdated,
+          tags: [],
+        };
+        for (let i = 0; i < rows.length; i++) {
+          note.tags.push(rows[i].tag);
+        }
+        res.send(note);
+        return;
+      });
+    }
+  });
 };
 
 let apiPostEdit = function (req, res) {
