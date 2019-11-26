@@ -246,13 +246,14 @@ let apiPostCreate = function (req, res) {
     if (!row) {
       console.log('No user found');
       res.redirect('/login');
+      return;
     }
     let userId = row.id;
     let content = req.body.content;
     let tags = req.body.tags.split(','); //new RegExp("/ *[,.;] *")     
     let datetime = Date.now();
 
-    // Check for emtpy content
+    // Check for empty content
     if (!content) {
       console.log('LOG: Note content is empty');
       res.json({
@@ -261,6 +262,7 @@ let apiPostCreate = function (req, res) {
       });
       return;
     }
+    
     // Check for tags with invalid characters
     for (let i = 0; i < tags.length; i++) {
       if (!isAlphaNumeric(tags[i])) {
@@ -402,9 +404,7 @@ let apiPostRead = function (req, res) {
 };
 
 let apiPostEdit = function (req, res) {
-  console.log('\n/api/edit POST');
-
-  console.log(req.body);
+  console.log('\nROUTE: /api/edit POST');
 
   let db = new sqlite3.Database('note.db');
   let id = req.body.id;
@@ -414,63 +414,89 @@ let apiPostEdit = function (req, res) {
   let token = req.body.token;
 
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
-  let username = jwtResult.username;
-  if (jwtResult == null) {
-    console.log('JWT Verification failed');
-    res.json({
-      result: false,
-      status: 'JWT Verification failed'
-    });
-  } else if (jwtResult.username == null) {
-    console.log('No username found');
-    res.json({
-      result: false,
-      status: 'No username found'
-    });
-  } else {
-    db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
-      if (row == undefined) {
-        console.log('No user found');
-        res.json({
-          result: false,
-          status: 'userNotFound'
-        });
-      } else {
-        db.all(`SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags
-        ON notes_tags.tags_id = tags.id WHERE notes_tags.notes_id = ?`, [id],
-          function (err, rows) {
-            let oldTags = [];
-            for (let i = 0; i < rows.length; i++) {
-              oldTags.push(rows[i].tag);
-            }
-            console.log('oldTags: ' + oldTags);
-            for (let i = 0; i < newTags.length; i++) {
-              if (newTags[i] != null && newTags[i] != '' && oldTags.indexOf(newTags[i]) == -1) {
-                console.log('insert -> ' + newTags[i]);
-                db.run(`INSERT INTO tags(tag) VALUES (?)`, [newTags[i]],
-                  function () {
-                    let newTagId = this.lastID;
-                    db.run(`INSERT INTO notes_tags(notes_id, tags_id)
-                        VALUES (?, ?)`, [id, newTagId]);
-                  })
-              }
-            }
-            for (let i = 0; i < oldTags.length; i++) {
-              if (newTags.indexOf(oldTags[i]) == -1) {
-                console.log('remove -> ' + oldTags[i]);
-                db.run(`DELETE FROM notes_tags WHERE notes_id = ? 
-                    AND tags_id = ?`, [id, oldTags[i]]);
-              }
-            }
-          })
-        db.run(`UPDATE notes SET content = ? WHERE id = ?`, [content, id]);
 
-        res.json({
-          status: 'Ok'
-        });
-      }
+  if (!jwtResult) {
+    console.log('LOG: JWT Verification failed');
+    res.json({
+      result: false,
+      reason: 'JWTVerificationFailed'
     });
+    return;
   }
+
+  let username = jwtResult.username;
+  console.log('VAR: username: ' + username);
+
+  if (!username) {
+    console.log('LOG: No username found');
+    res.json({
+      result: false,
+      status: 'usernameNotFound'
+    });
+    return;
+  }
+
+  // Check for empty content
+  if (!content) {
+    console.log('LOG: Note content is empty');
+    res.json({
+      result: false,
+      reason: 'contentEmpty'
+    });
+    return;
+  }
+
+  // Check for tags with invalid characters
+  for (let i = 0; i < tags.length; i++) {
+    if (!isAlphaNumeric(tags[i])) {
+      console.log('LOG: Tag has invalid characters');
+      res.json({
+        result: false,
+        reason: 'tagInvalidCharacter'
+      });
+      return;
+    }
+  }
+
+  db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
+    if (!row) {
+      console.log('No user found');
+      res.json({
+        result: false,
+        status: 'userNotFound'
+      });
+      return;
+    }
+    db.all(`SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes_tags.notes_id = ?`, [id], function (err, rows) {
+      let oldTags = [];
+      for (let i = 0; i < rows.length; i++) {
+        oldTags.push(rows[i].tag);
+      }
+      console.log('oldTags: ' + oldTags);
+      for (let i = 0; i < newTags.length; i++) {
+        if (newTags[i] != null && newTags[i] != '' && oldTags.indexOf(newTags[i]) == -1) {
+          console.log('insert -> ' + newTags[i]);
+          db.run(`INSERT INTO tags(tag) VALUES (?)`, [newTags[i]],
+            function () {
+              let newTagId = this.lastID;
+              db.run(`INSERT INTO notes_tags(notes_id, tags_id) VALUES (?, ?)`, [id, newTagId]);
+            })
+        }
+      }
+      for (let i = 0; i < oldTags.length; i++) {
+        if (newTags.indexOf(oldTags[i]) == -1) {
+          console.log('remove -> ' + oldTags[i]);
+          db.run(`DELETE FROM notes_tags WHERE notes_id = ? AND tags_id = ?`, [id, oldTags[i]]);
+        }
+      }
+    })
+
+    db.run(`UPDATE notes SET content = ? WHERE id = ?`, [content, id]);
+    res.json({
+      status: 'Ok'
+    });
+    return;
+  });
 };
 
 let apiGetDelete = function (req, res) {
