@@ -27,43 +27,61 @@ let webGetIndex = function (req, res) {
 };
 
 let webPostLogin = function (req, res) {
-  console.log('\n/login POST');
+  console.log('\nROUTE: /login POST');
 
   let db = new sqlite3.Database('note.db');
   let username = req.body.username;
   let password = req.body.password;
-  console.log('username: ' + username);
-  console.log('password: ' + password);
+  console.log('VAR: username: ' + username);
+  console.log('VAR: password: ' + password);
+
+  // Check empty fields
+  if (!username) {
+    res.json({
+      result: false
+    });
+    return;
+  }
+  if (!password) {
+    res.json({
+      result: false
+    });
+    return;
+  }
 
   db.get(`SELECT pswd FROM user_acc WHERE usrn="${username}"`, function (err, row) {
     // Check if username exists
-    if (row != undefined) {
-      console.log('Username found');
-      let hash = row.pswd;
-      console.log('hash: ' + hash);
-      let compareRes = bcrypt.compareSync(password, hash);
-      console.log(compareRes);
-      if (compareRes == true) {
-        console.log('Username verified');
-        let token = jwt.newJWT(username, jwtSecret);
-        console.log('token: ' + token);
-        let response = {
-          result: true,
-          token
-        };
-        res.json(response);
-      } else {
-        res.json({
-          result: false,
-          reason: 'wrongPassword'
-        });
-      }
-    } else {
+    if (row == undefined) {
       res.json({
         result: false,
         reason: 'usernameNotFound'
       });
+      return;
     }
+
+    // Check password
+    console.log('LOG: Username found');
+    let hash = row.pswd;
+    console.log('VAR: hash: ' + hash);
+    let compareRes = bcrypt.compareSync(password, hash);
+    console.log('VAR: compareRes: ' + compareRes);
+    if (!compareRes) {
+      res.json({
+        result: false,
+        reason: 'wrongPassword'
+      });
+      return;
+    }
+
+    // Return token
+    console.log('LOG: Username verified');
+    let token = jwt.newJWT(username, jwtSecret);
+    console.log('VAR: token: ' + token);
+    res.json({
+      result: true,
+      token
+    });
+    return;
   });
 };
 
@@ -112,25 +130,23 @@ let apiPostSignup = function (req, res) {
     });
   }
 
-  db.get(`SELECT usrn FROM user_acc WHERE usrn="${username}"`,
-    function (err, row) {
-      // Check if username is already used
-      if (row != undefined) {
-        console.log('Username already exists');
-        res.json({
-          result: false,
-          reason: 'usernameExists'
-        });
-      }
-      // Otherwise, create a new account
-      db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES 
-    ("${username}", "${hash}", "${datetime}", "${datetime}")`, function () {
-        console.log('Username created');
-        res.json({
-          result: true
-        });
+  db.get(`SELECT usrn FROM user_acc WHERE usrn="${username}"`, function (err, row) {
+    // Check if username is already used
+    if (row != undefined) {
+      console.log('Username already exists');
+      res.json({
+        result: false,
+        reason: 'usernameExists'
+      });
+    }
+    // Otherwise, create a new account
+    db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES ("${username}", "${hash}", "${datetime}", "${datetime}")`, function () {
+      console.log('Username created');
+      res.json({
+        result: true
       });
     });
+  });
 };
 
 let apiPostCreate = function (req, res) {
