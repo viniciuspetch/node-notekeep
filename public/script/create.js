@@ -40,7 +40,7 @@ function create() {
       tags,
       token
     }, (data) => {
-      console.log('test');
+      window.location.href = '/read';
     });
   }
 
