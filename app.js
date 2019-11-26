@@ -5,6 +5,17 @@ const bcrypt = require('bcrypt');
 const jwt = require('./server/jwt');
 const jwtSecret = 'nodejs';
 
+function isAlphaNumeric(str) {
+  for (let i = 0; i < str.length; i++) {
+    let code = str.charCodeAt(i);
+    if (!(code > 47 && code < 58) && // numeric (0-9)
+      !(code > 64 && code < 91) && // upper alpha (A-Z)
+      !(code > 96 && code < 123)) { // lower alpha (a-z)
+      return false;
+    }
+  }
+  return true;
+};
 
 let webGetLogin = function (req, res) {
   console.log('\n/login GET');
@@ -114,20 +125,62 @@ let apiPostSignup = function (req, res) {
   console.log(datetime);
 
   // Check empty username
-  if (username == undefined) {
-    console.log('Username is empty');
+  if (!username) {
+    console.log('LOG: Username is empty');
     res.json({
       result: false,
       reason: 'emptyUsername'
     });
+    return;
   }
   // Check empty password
-  if (password == undefined) {
-    console.log('Password is empty');
+  if (!password) {
+    console.log('LOG: Password is empty');
     res.json({
       result: false,
       reason: 'emptyPassword'
     });
+    return;
+  }
+  if (username.length > 32) {
+    console.log('LOG: Username is too long');
+    res.json({
+      result: false,
+      reason: 'usernameTooLong'
+    });
+    return;
+  }
+  if (password.length > 32) {
+    console.log('LOG: Password is too long');
+    res.json({
+      result: false,
+      reason: 'passwordTooLong'
+    });
+    return;
+  }
+  if (password.length < 4) {
+    console.log('LOG: Password is too short');
+    res.json({
+      result: false,
+      reason: 'passwordTooShort'
+    });
+    return;
+  }
+  if (!isAlphaNumeric(username)) {
+    console.log('LOG: Username has invalid characters');
+    res.json({
+      result: false,
+      reason: 'usernameInvalidCharacters'
+    });
+    return;
+  }
+  if (!isAlphaNumeric(password)) {
+    console.log('LOG: Password has invalid characters');
+    res.json({
+      result: false,
+      reason: 'passwordInvalidCharacters'
+    });
+    return;
   }
 
   db.get(`SELECT usrn FROM user_acc WHERE usrn="${username}"`, function (err, row) {
@@ -138,6 +191,7 @@ let apiPostSignup = function (req, res) {
         result: false,
         reason: 'usernameExists'
       });
+      return;
     }
     // Otherwise, create a new account
     db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES ("${username}", "${hash}", "${datetime}", "${datetime}")`, function () {
@@ -145,6 +199,7 @@ let apiPostSignup = function (req, res) {
       res.json({
         result: true
       });
+      return;
     });
   });
 };
