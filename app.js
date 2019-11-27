@@ -513,41 +513,34 @@ let apiDeleteNote = function (req, res, next) {
   console.log('[VAR]\tid: ' + id);
   console.log('[VAR]\tjwtResult: ' + jwtResult);
 
-  res.status(200);
-  res.send('Hi');
-
-  /*
   if (!jwtResult) {
-    console.log('LOG: JWT Verification failed');
-    res.json({
-      result: false,
-      reason: 'JWTVerificationFailed'
-    });
+    console.log('[LOG]\tJWT Verification failed');
+    res.status(401);
+    res.send('JWT Verification failed');
     return;
   }
 
   let username = jwtResult.username;
-  console.log('VAR: username: ' + username);
+  console.log('[VAR] username: ' + username);
 
   if (!username) {
-    console.log('LOG: No username found');
-    res.json({
-      result: false,
-      status: 'usernameNotFound'
-    });
+    console.log('[LOG]\tJWT does not contain username');
+    res.status(401);
+    res.send('JWT does not contain username');
     return;
   }
 
   let db = new sqlite3.Database('note.db');
-
   db.get(`SELECT id FROM user_acc WHERE usrn = ?`, [username], function (err, row) {
     if (!row) {
-      console.log('LOG: No user found');
-      res.redirect('/login');
+      console.log('[LOG]\tUsername does not exist');
+      res.status(401);
+      res.send('Username does not exist');
+      //res.redirect('/login');
       return;
     }
 
-    if(!id) {
+    if (!id) {
       console.log('LOG: Note ID is empty');
       res.json({
         result: false,
@@ -559,11 +552,12 @@ let apiDeleteNote = function (req, res, next) {
     db.run(`DELETE FROM notes WHERE id = ?`, [id], function () {
       db.run(`DELETE FROM notes_tags WHERE notes_id = ?`, [id],
         function () {
-          res.redirect('/read');
+          console.log('[LOG]\tNote deleted');
+          res.sendStatus(200);
+          return;
         });
     });
   });
-  */
 };
 
 let app = express();
