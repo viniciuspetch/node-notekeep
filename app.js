@@ -37,7 +37,22 @@ let webGetIndex = function (req, res) {
   res.sendFile(__dirname + '/public/html/index.html');
 };
 
-let webPostLogin = function (req, res) {
+let webGetCreate = function (req, res) {
+  console.log('\n/create GET');
+  res.sendFile(__dirname + '/public/html/create.html');
+};
+
+let webGetRead = function (req, res) {
+  console.log('\n/read GET');
+  res.sendFile(__dirname + '/public//html/read.html');
+};
+
+let webGetEdit = function (req, res) {
+  console.log('\n/edit/:id GET');
+  res.sendFile(__dirname + '/public/html/edit.html');
+};
+
+let apiPostLogin = function (req, res) {
   console.log('\nROUTE: /login POST');
 
   let db = new sqlite3.Database('note.db');
@@ -94,21 +109,6 @@ let webPostLogin = function (req, res) {
     });
     return;
   });
-};
-
-let webGetCreate = function (req, res) {
-  console.log('\n/create GET');
-  res.sendFile(__dirname + '/public/html/create.html');
-};
-
-let webGetRead = function (req, res) {
-  console.log('\n/read GET');
-  res.sendFile(__dirname + '/public//html/read.html');
-};
-
-let webGetEdit = function (req, res) {
-  console.log('\n/edit/:id GET');
-  res.sendFile(__dirname + '/public/html/edit.html');
 };
 
 let apiPostSignup = function (req, res) {
@@ -262,7 +262,7 @@ let apiPostCreate = function (req, res) {
       });
       return;
     }
-    
+
     // Check for tags with invalid characters
     for (let i = 0; i < tags.length; i++) {
       if (!isAlphaNumeric(tags[i])) {
@@ -317,12 +317,12 @@ let apiPostCreate = function (req, res) {
 }
 
 let apiPostRead = function (req, res) {
-  console.log('\n/api/read POST');
+  console.log('\nROUTE: /api/read POST');
 
-  let db = new sqlite3.Database('note.db');
+  let token = req.headers['authorization'].split(' ')[1];
+  console.log('VAR: token: ' + token);
+  
   let id = req.body.id;
-  let token = req.body.token;
-
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
   let username = jwtResult.username;
 
@@ -342,6 +342,9 @@ let apiPostRead = function (req, res) {
     });
     return;
   }
+
+  let db = new sqlite3.Database('note.db');
+
   db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
     if (row == undefined) {
       console.log('No user found');
@@ -524,13 +527,13 @@ app.use(bodyParser.urlencoded({
 
 app.get('/', webGetIndex);
 app.get('/login', webGetLogin);
-app.post('/login', webPostLogin);
 app.get('/signup', webGetSignup);
 app.get('/signout', webGetSignout);
 app.get('/create', webGetCreate);
 app.get('/read', webGetRead);
 app.get('/edit/:id', webGetEdit);
 
+app.post('/api/login', apiPostLogin);
 app.post('/api/signup', apiPostSignup);
 app.post('/api/create', apiPostCreate);
 app.post('/api/read', apiPostRead);

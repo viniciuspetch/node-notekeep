@@ -24,3 +24,15 @@ $(function () {
     token
   });
 });
+
+/*
+    $.ajax({
+        url: "/test",
+        method: 'GET',
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem('token'),
+        },
+    }).done(() => {
+        console.log('hello');
+    })
+*/
