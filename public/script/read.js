@@ -1,5 +1,4 @@
 function apiDelete(token, id) {
-
   alert('here');
   body = {
     token,
@@ -11,8 +10,15 @@ function apiDelete(token, id) {
   });
 }
 
-function readPost(data) {
-  $.post("http://localhost:8000/api/read", data, (response) => {
+function readPost() {
+  console.log('LOG: readPost()');
+  $.ajax({
+    url: "/api/read",
+    method: 'GET',
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem('token'),
+    },
+  }).done((response) => {
     console.log(response);
     for (let i = 0; i < response.length; i++) {
       console.log(response[i]);
@@ -35,25 +41,9 @@ $(function () {
 
   $('#updateLink').click(function () {
     $('#noteList').empty();
-    readPost({
-      token
-    });
+    readPost();
   });
 
   token = localStorage.getItem('token');
-  readPost({
-    token
-  });
+  readPost();
 });
-
-/*
-    $.ajax({
-        url: "/test",
-        method: 'GET',
-        headers: {
-            "Authorization": "Bearer " + localStorage.getItem('token'),
-        },
-    }).done(() => {
-        console.log('hello');
-    })
-*/

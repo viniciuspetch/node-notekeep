@@ -327,7 +327,7 @@ let apiPostRead = function (req, res) {
   let username = jwtResult.username;
 
   if (!jwtResult) {
-    console.log('JWT Verification failed');
+    console.log('LOG: JWT Verification failed');
     res.json({
       result: false,
       status: 'JWT Verification failed'
@@ -335,7 +335,7 @@ let apiPostRead = function (req, res) {
     return;
   }
   if (!username) {
-    console.log('No username found');
+    console.log('LOG: No username found');
     res.json({
       result: false,
       status: 'No username found'
@@ -576,6 +576,7 @@ app.get('/edit/:id', webGetEdit);
 app.post('/api/login', apiPostLogin);
 app.post('/api/signup', apiPostSignup);
 app.post('/api/create', apiPostCreate);
+app.get('/api/read', apiPostRead);
 app.post('/api/read', apiPostRead);
 app.post('/api/edit', apiPostEdit);
 app.post('/api/delete', apiPostDelete);
