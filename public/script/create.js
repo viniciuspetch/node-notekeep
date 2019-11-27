@@ -29,21 +29,24 @@ function validateNote(content, tags) {
 function create() {
   console.log('create()');
 
-  let url = '/api/create';
   let content = $('#note').val();
   let tags = $('#tags').val();
-  let token = localStorage.getItem('token');
 
   if (validateNote(content, tags)) {
-    $.post(url, {
-      content,
-      tags,
-      token
-    }, (data) => {
+    $.ajax({
+      url: '/api/note',
+      method: 'POST',
+      headers: {
+        "Authorization": "Bearer " + localStorage.getItem('token'),
+      },
+      data: {
+        content,
+        tags,
+      },
+    }).done(() => {
       window.location.href = '/read';
     });
   }
-
   return false;
 }
 

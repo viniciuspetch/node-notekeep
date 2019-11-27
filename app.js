@@ -215,27 +215,23 @@ let apiPostCreate = function (req, res) {
   }
 
   console.log('\nROUTE: /api/create POST');
-  let token = req.body.token;
+  let token = req.headers['authorization'].split(' ')[1];
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
 
   if (!jwtResult) {
-    console.log('LOG: JWT Verification failed');
-    res.json({
-      result: false,
-      reason: 'JWTVerificationFailed'
-    });
+    console.log('[LOG]\tJWT Verification failed');
+    res.status(401);
+    res.send('JWT Verification failed');
     return;
   }
 
   let username = jwtResult.username;
-  console.log('VAR: username: ' + username);
+  console.log('[VAR] username: ' + username);
 
   if (!username) {
-    console.log('LOG: No username found');
-    res.json({
-      result: false,
-      status: 'usernameNotFound'
-    });
+    console.log('[LOG]\tJWT does not contain username');
+    res.status(401);
+    res.send('JWT does not contain username');
     return;
   }
 
@@ -578,11 +574,12 @@ app.get('/edit/:id', webGetEdit);
 
 app.post('/api/login', apiPostLogin);
 app.post('/api/signup', apiPostSignup);
-app.post('/api/create', apiPostCreate);
+
 app.get('/api/read', apiPostRead);
 app.post('/api/read', apiPostRead);
 app.post('/api/edit', apiPostEdit);
 
+app.post('/api/note', apiPostCreate);
 app.delete('/api/note/:id', apiDeleteNote);
 
 app.listen(8000, function () {
