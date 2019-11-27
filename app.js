@@ -321,7 +321,7 @@ let apiPostRead = function (req, res) {
 
   let token = req.headers['authorization'].split(' ')[1];
   console.log('VAR: token: ' + token);
-  
+
   let id = req.body.id;
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
   let username = jwtResult.username;
@@ -502,11 +502,21 @@ let apiPostEdit = function (req, res) {
   });
 };
 
-let apiPostDelete = function (req, res) {
-  console.log('\nROUTE: /api/delete POST');
-  let token = req.body.token;
+let apiDeleteNote = function (req, res, next) {
+  console.log('\n[ROUTE]\t/api/note DELETE');
+
+  let token = req.headers['authorization'].split(' ')[1];
+  let id = req.params.id;
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
 
+  console.log('[VAR]\ttoken: ' + token);
+  console.log('[VAR]\tid: ' + id);
+  console.log('[VAR]\tjwtResult: ' + jwtResult);
+
+  res.status(200);
+  res.send('Hi');
+
+  /*
   if (!jwtResult) {
     console.log('LOG: JWT Verification failed');
     res.json({
@@ -536,8 +546,6 @@ let apiPostDelete = function (req, res) {
       res.redirect('/login');
       return;
     }
-    let id = req.body.id;
-    console.log('VAR: id: ' + id);
 
     if(!id) {
       console.log('LOG: Note ID is empty');
@@ -555,6 +563,7 @@ let apiPostDelete = function (req, res) {
         });
     });
   });
+  */
 };
 
 let app = express();
@@ -579,7 +588,8 @@ app.post('/api/create', apiPostCreate);
 app.get('/api/read', apiPostRead);
 app.post('/api/read', apiPostRead);
 app.post('/api/edit', apiPostEdit);
-app.post('/api/delete', apiPostDelete);
+
+app.delete('/api/note/:id', apiDeleteNote);
 
 app.listen(8000, function () {
   console.log('Ready');

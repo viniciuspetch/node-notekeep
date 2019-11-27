@@ -1,20 +1,28 @@
 function apiDelete(token, id) {
-  alert('here');
   body = {
     token,
     id
   };
-  $.post("http://localhost:8000/api/delete", body, (data) => {
-    console.log('Note deleted');
-    return false;
-  });
+
+  $.ajax({
+    url: "/api/note/" + id,
+    method: "DELETE",
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem('token'),
+    },
+  }).done((data, textStatus, xhr) => {
+    console.log(data);
+    console.log(textStatus);
+    console.log(xhr.status);
+    console.log(xhr);
+  }); 
 }
 
 function readPost() {
   console.log('LOG: readPost()');
   $.ajax({
     url: "/api/read",
-    method: 'GET',
+    method: "GET",
     headers: {
       "Authorization": "Bearer " + localStorage.getItem('token'),
     },
