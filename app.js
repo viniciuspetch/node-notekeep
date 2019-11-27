@@ -502,18 +502,58 @@ let apiPostEdit = function (req, res) {
   });
 };
 
-let apiGetDelete = function (req, res) {
-  console.log('\n/api/delete GET');
-  console.log(req.body);
+let apiPostDelete = function (req, res) {
+  console.log('\nROUTE: /api/delete POST');
+  let token = req.body.token;
+  let jwtResult = jwt.verifyJWT(token, jwtSecret);
+
+  if (!jwtResult) {
+    console.log('LOG: JWT Verification failed');
+    res.json({
+      result: false,
+      reason: 'JWTVerificationFailed'
+    });
+    return;
+  }
+
+  let username = jwtResult.username;
+  console.log('VAR: username: ' + username);
+
+  if (!username) {
+    console.log('LOG: No username found');
+    res.json({
+      result: false,
+      status: 'usernameNotFound'
+    });
+    return;
+  }
 
   let db = new sqlite3.Database('note.db');
-  let id = req.params.id;
 
-  db.run(`DELETE FROM notes WHERE id = ?`, [id], function () {
-    db.run(`DELETE FROM notes_tags WHERE notes_id = ?`, [id],
-      function () {
-        res.redirect('/read');
+  db.get(`SELECT id FROM user_acc WHERE usrn = ?`, [username], function (err, row) {
+    if (!row) {
+      console.log('LOG: No user found');
+      res.redirect('/login');
+      return;
+    }
+    let id = req.body.id;
+    console.log('VAR: id: ' + id);
+
+    if(!id) {
+      console.log('LOG: Note ID is empty');
+      res.json({
+        result: false,
+        reason: 'idEmpty'
       });
+      return;
+    }
+
+    db.run(`DELETE FROM notes WHERE id = ?`, [id], function () {
+      db.run(`DELETE FROM notes_tags WHERE notes_id = ?`, [id],
+        function () {
+          res.redirect('/read');
+        });
+    });
   });
 };
 
@@ -538,7 +578,7 @@ app.post('/api/signup', apiPostSignup);
 app.post('/api/create', apiPostCreate);
 app.post('/api/read', apiPostRead);
 app.post('/api/edit', apiPostEdit);
-app.get('/api/delete/:id', apiGetDelete);
+app.post('/api/delete', apiPostDelete);
 
 app.listen(8000, function () {
   console.log('Ready');
