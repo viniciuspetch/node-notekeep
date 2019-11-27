@@ -14,7 +14,7 @@ function validateLogin(username, password) {
 function login() {
     console.log("login()");
 
-    let url = "http://localhost:8000/login";
+    let url = "http://localhost:8000/api/login";
     let username = $('#username').val();
     let password = $('#password').val();
     if (validateLogin(username, password)) {
