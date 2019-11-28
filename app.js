@@ -315,6 +315,7 @@ let apiPostCreate = function (req, res) {
 let apiPostRead = function (req, res) {
   console.log('\nROUTE: /api/read POST');
 
+  console.log(req.headers['authorization']);
   let token = req.headers['authorization'].split(' ')[1];
   console.log('VAR: token: ' + token);
 
@@ -403,14 +404,17 @@ let apiPostRead = function (req, res) {
 };
 
 let apiPostEdit = function (req, res) {
-  console.log('\nROUTE: /api/edit POST');
+  console.log('\nROUTE: /api/note PUT');
 
   let db = new sqlite3.Database('note.db');
-  let id = req.body.id;
+  let id = req.params.id;
   let content = req.body.content;
   let tags = req.body.tags;
   let newTags = tags.split(',');
-  let token = req.body.token;
+  let token = req.headers['authorization'].split(' ')[1];
+  console.log(content);
+  console.log(tags);
+
 
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
 
@@ -490,7 +494,9 @@ let apiPostEdit = function (req, res) {
       }
     })
 
-    db.run(`UPDATE notes SET content = ? WHERE id = ?`, [content, id]);
+    db.run(`UPDATE notes SET content = ? WHERE id = ?`, [content, id], () => {
+      console.log('updated');
+    });
     res.json({
       status: 'Ok'
     });
@@ -577,9 +583,9 @@ app.post('/api/signup', apiPostSignup);
 
 app.get('/api/read', apiPostRead);
 app.post('/api/read', apiPostRead);
-app.post('/api/edit', apiPostEdit);
 
 app.post('/api/note', apiPostCreate);
+app.put('/api/note/:id', apiPostEdit);
 app.delete('/api/note/:id', apiDeleteNote);
 
 app.listen(8000, function () {
