@@ -1,18 +1,29 @@
-function apiDelete(token, id) {
-
-  alert('here');
-  body = {
-    token,
-    id
-  };
-  $.post("http://localhost:8000/api/delete", body, (data) => {
+function apiDelete(id) {
+  console.log('[LOG] apiDelete(id)');
+  $.ajax({
+    url: "/api/note/" + id,
+    method: "DELETE",
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem('token'),
+    },
+  }).done((data, textStatus, xhr) => {
+    console.log('(' + xhr.status + ') ' + textStatus + '/' + xhr.statusText + ': ' + data);
+  }).fail((xhr, textStatus, err) => {
+    console.log('(' + xhr.status + ') ' + textStatus + '/' + err + ': ' + xhr.responseText);
+  }).then(() => {
     console.log('Note deleted');
-    return false;
   });
 }
 
-function readPost(data) {
-  $.post("http://localhost:8000/api/read", data, (response) => {
+function readPost() {
+  console.log('LOG: readPost()');
+  $.ajax({
+    url: "/api/read",
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem('token'),
+    },
+  }).done((response) => {
     console.log(response);
     for (let i = 0; i < response.length; i++) {
       console.log(response[i]);
@@ -21,10 +32,9 @@ function readPost(data) {
       let noteId = '#noteItem_' + response[i].id;
 
       console.log($(noteId).click(() => {
-        apiDelete(token, response[i].id);
+        apiDelete(response[i].id);
       }));
     }
-
     return false;
   });
 }
@@ -32,16 +42,10 @@ function readPost(data) {
 $(function () {
   console.log('read.js');
   console.log(localStorage.getItem('token'));
-
+  readPost();
+  token = localStorage.getItem('token');
   $('#updateLink').click(function () {
     $('#noteList').empty();
-    readPost({
-      token
-    });
-  });
-
-  token = localStorage.getItem('token');
-  readPost({
-    token
+    readPost();
   });
 });

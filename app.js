@@ -37,7 +37,22 @@ let webGetIndex = function (req, res) {
   res.sendFile(__dirname + '/public/html/index.html');
 };
 
-let webPostLogin = function (req, res) {
+let webGetCreate = function (req, res) {
+  console.log('\n/create GET');
+  res.sendFile(__dirname + '/public/html/create.html');
+};
+
+let webGetRead = function (req, res) {
+  console.log('\n/read GET');
+  res.sendFile(__dirname + '/public//html/read.html');
+};
+
+let webGetEdit = function (req, res) {
+  console.log('\n/edit/:id GET');
+  res.sendFile(__dirname + '/public/html/edit.html');
+};
+
+let apiPostLogin = function (req, res) {
   console.log('\nROUTE: /login POST');
 
   let db = new sqlite3.Database('note.db');
@@ -94,21 +109,6 @@ let webPostLogin = function (req, res) {
     });
     return;
   });
-};
-
-let webGetCreate = function (req, res) {
-  console.log('\n/create GET');
-  res.sendFile(__dirname + '/public/html/create.html');
-};
-
-let webGetRead = function (req, res) {
-  console.log('\n/read GET');
-  res.sendFile(__dirname + '/public//html/read.html');
-};
-
-let webGetEdit = function (req, res) {
-  console.log('\n/edit/:id GET');
-  res.sendFile(__dirname + '/public/html/edit.html');
 };
 
 let apiPostSignup = function (req, res) {
@@ -215,27 +215,23 @@ let apiPostCreate = function (req, res) {
   }
 
   console.log('\nROUTE: /api/create POST');
-  let token = req.body.token;
+  let token = req.headers['authorization'].split(' ')[1];
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
 
   if (!jwtResult) {
-    console.log('LOG: JWT Verification failed');
-    res.json({
-      result: false,
-      reason: 'JWTVerificationFailed'
-    });
+    console.log('[LOG]\tJWT Verification failed');
+    res.status(401);
+    res.send('JWT Verification failed');
     return;
   }
 
   let username = jwtResult.username;
-  console.log('VAR: username: ' + username);
+  console.log('[VAR] username: ' + username);
 
   if (!username) {
-    console.log('LOG: No username found');
-    res.json({
-      result: false,
-      status: 'usernameNotFound'
-    });
+    console.log('[LOG]\tJWT does not contain username');
+    res.status(401);
+    res.send('JWT does not contain username');
     return;
   }
 
@@ -317,17 +313,18 @@ let apiPostCreate = function (req, res) {
 }
 
 let apiPostRead = function (req, res) {
-  console.log('\n/api/read POST');
+  console.log('\nROUTE: /api/read POST');
 
-  let db = new sqlite3.Database('note.db');
+  console.log(req.headers['authorization']);
+  let token = req.headers['authorization'].split(' ')[1];
+  console.log('VAR: token: ' + token);
+
   let id = req.body.id;
-  let token = req.body.token;
-
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
   let username = jwtResult.username;
 
   if (!jwtResult) {
-    console.log('JWT Verification failed');
+    console.log('LOG: JWT Verification failed');
     res.json({
       result: false,
       status: 'JWT Verification failed'
@@ -335,13 +332,16 @@ let apiPostRead = function (req, res) {
     return;
   }
   if (!username) {
-    console.log('No username found');
+    console.log('LOG: No username found');
     res.json({
       result: false,
       status: 'No username found'
     });
     return;
   }
+
+  let db = new sqlite3.Database('note.db');
+
   db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
     if (row == undefined) {
       console.log('No user found');
@@ -404,14 +404,17 @@ let apiPostRead = function (req, res) {
 };
 
 let apiPostEdit = function (req, res) {
-  console.log('\nROUTE: /api/edit POST');
+  console.log('\nROUTE: /api/note PUT');
 
   let db = new sqlite3.Database('note.db');
-  let id = req.body.id;
+  let id = req.params.id;
   let content = req.body.content;
   let tags = req.body.tags;
   let newTags = tags.split(',');
-  let token = req.body.token;
+  let token = req.headers['authorization'].split(' ')[1];
+  console.log(content);
+  console.log(tags);
+
 
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
 
@@ -491,7 +494,9 @@ let apiPostEdit = function (req, res) {
       }
     })
 
-    db.run(`UPDATE notes SET content = ? WHERE id = ?`, [content, id]);
+    db.run(`UPDATE notes SET content = ? WHERE id = ?`, [content, id], () => {
+      console.log('updated');
+    });
     res.json({
       status: 'Ok'
     });
@@ -499,44 +504,45 @@ let apiPostEdit = function (req, res) {
   });
 };
 
-let apiPostDelete = function (req, res) {
-  console.log('\nROUTE: /api/delete POST');
-  let token = req.body.token;
+let apiDeleteNote = function (req, res, next) {
+  console.log('\n[ROUTE]\t/api/note DELETE');
+
+  let token = req.headers['authorization'].split(' ')[1];
+  let id = req.params.id;
   let jwtResult = jwt.verifyJWT(token, jwtSecret);
 
+  console.log('[VAR]\ttoken: ' + token);
+  console.log('[VAR]\tid: ' + id);
+  console.log('[VAR]\tjwtResult: ' + jwtResult);
+
   if (!jwtResult) {
-    console.log('LOG: JWT Verification failed');
-    res.json({
-      result: false,
-      reason: 'JWTVerificationFailed'
-    });
+    console.log('[LOG]\tJWT Verification failed');
+    res.status(401);
+    res.send('JWT Verification failed');
     return;
   }
 
   let username = jwtResult.username;
-  console.log('VAR: username: ' + username);
+  console.log('[VAR] username: ' + username);
 
   if (!username) {
-    console.log('LOG: No username found');
-    res.json({
-      result: false,
-      status: 'usernameNotFound'
-    });
+    console.log('[LOG]\tJWT does not contain username');
+    res.status(401);
+    res.send('JWT does not contain username');
     return;
   }
 
   let db = new sqlite3.Database('note.db');
-
   db.get(`SELECT id FROM user_acc WHERE usrn = ?`, [username], function (err, row) {
     if (!row) {
-      console.log('LOG: No user found');
-      res.redirect('/login');
+      console.log('[LOG]\tUsername does not exist');
+      res.status(401);
+      res.send('Username does not exist');
+      //res.redirect('/login');
       return;
     }
-    let id = req.body.id;
-    console.log('VAR: id: ' + id);
 
-    if(!id) {
+    if (!id) {
       console.log('LOG: Note ID is empty');
       res.json({
         result: false,
@@ -548,7 +554,9 @@ let apiPostDelete = function (req, res) {
     db.run(`DELETE FROM notes WHERE id = ?`, [id], function () {
       db.run(`DELETE FROM notes_tags WHERE notes_id = ?`, [id],
         function () {
-          res.redirect('/read');
+          console.log('[LOG]\tNote deleted');
+          res.sendStatus(200);
+          return;
         });
     });
   });
@@ -564,18 +572,21 @@ app.use(bodyParser.urlencoded({
 
 app.get('/', webGetIndex);
 app.get('/login', webGetLogin);
-app.post('/login', webPostLogin);
 app.get('/signup', webGetSignup);
 app.get('/signout', webGetSignout);
 app.get('/create', webGetCreate);
 app.get('/read', webGetRead);
 app.get('/edit/:id', webGetEdit);
 
+app.post('/api/login', apiPostLogin);
 app.post('/api/signup', apiPostSignup);
-app.post('/api/create', apiPostCreate);
+
+app.get('/api/read', apiPostRead);
 app.post('/api/read', apiPostRead);
-app.post('/api/edit', apiPostEdit);
-app.post('/api/delete', apiPostDelete);
+
+app.post('/api/note', apiPostCreate);
+app.put('/api/note/:id', apiPostEdit);
+app.delete('/api/note/:id', apiDeleteNote);
 
 app.listen(8000, function () {
   console.log('Ready');

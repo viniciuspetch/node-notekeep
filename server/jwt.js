@@ -12,15 +12,20 @@ exports.newJWT = function (username, secret) {
 }
 
 exports.verifyJWT = function (token, secret) {
-  let verifiedToken;
-  if (token == null || secret == null) {
+  console.log('[LOG]\tverifyJWT(token, secret)');
+  if (token == null) {
+    console.log('[LOG]\tToken is null');
+    return false;
+  }
+  if (secret == null) {
+    console.log('[LOG]\tSecret is null');
     return false;
   }
   try {
-    verifiedToken = jsonwebtoken.verify(token, secret);
+    let verifiedToken = jsonwebtoken.verify(token, secret);
     return verifiedToken;
   } catch (err) {
-    console.log(err);
+    console.log('[LOG]\tJson Web Token received is invalid');
     return false;
   }
 }
