@@ -461,7 +461,7 @@ let apiPostEdit = function (req, res) {
     }
   }
 
-  db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
+  db.get('SELECT id FROM user_acc WHERE usrn = ?', [username], function (err, row) {
     if (!row) {
       console.log('No user found');
       res.json({
