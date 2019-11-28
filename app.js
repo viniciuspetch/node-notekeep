@@ -75,7 +75,7 @@ let apiPostLogin = function (req, res) {
     return;
   }
 
-  db.get(`SELECT pswd FROM user_acc WHERE usrn="${username}"`, function (err, row) {
+  db.get('SELECT pswd FROM user_acc WHERE usrn=?', [username], function (err, row) {
     // Check if username exists
     if (row == undefined) {
       res.json({
