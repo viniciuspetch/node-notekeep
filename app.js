@@ -75,7 +75,7 @@ let apiPostLogin = function (req, res) {
     return;
   }
 
-  db.get(`SELECT pswd FROM user_acc WHERE usrn="${username}"`, function (err, row) {
+  db.get('SELECT pswd FROM user_acc WHERE usrn=?', [username], function (err, row) {
     // Check if username exists
     if (row == undefined) {
       res.json({
@@ -183,7 +183,7 @@ let apiPostSignup = function (req, res) {
     return;
   }
 
-  db.get(`SELECT usrn FROM user_acc WHERE usrn="${username}"`, function (err, row) {
+  db.get('SELECT usrn FROM user_acc WHERE usrn=?', [username], function (err, row) {
     // Check if username is already used
     if (row != undefined) {
       console.log('Username already exists');
@@ -194,7 +194,7 @@ let apiPostSignup = function (req, res) {
       return;
     }
     // Otherwise, create a new account
-    db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES ("${username}", "${hash}", "${datetime}", "${datetime}")`, function () {
+    db.run('INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES (?,?,?,?)', [username, hash, datetime, datetime], function () {
       console.log('Username created');
       res.json({
         result: true
@@ -238,7 +238,7 @@ let apiPostCreate = function (req, res) {
   let db = new sqlite3.Database('note.db');
 
   // Searching for user with this username
-  db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
+  db.get('SELECT id FROM user_acc WHERE usrn = ?', [username], function (err, row) {
     if (!row) {
       console.log('No user found');
       res.redirect('/login');
@@ -342,7 +342,7 @@ let apiPostRead = function (req, res) {
 
   let db = new sqlite3.Database('note.db');
 
-  db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
+  db.get('SELECT id FROM user_acc WHERE usrn = ?', [username], function (err, row) {
     if (row == undefined) {
       console.log('No user found');
       res.json({
@@ -358,7 +358,7 @@ let apiPostRead = function (req, res) {
     console.log('userid: ' + userid);
 
     if (id === undefined) {
-      db.all(`SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = ${userid} ORDER BY notes.id`, function (err, rows) {
+      db.all('SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = ? ORDER BY notes.id', [userId], function (err, rows) {
         console.log(rows);
         let init = null;
         let noteList = [];
@@ -461,7 +461,7 @@ let apiPostEdit = function (req, res) {
     }
   }
 
-  db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
+  db.get('SELECT id FROM user_acc WHERE usrn = ?', [username], function (err, row) {
     if (!row) {
       console.log('No user found');
       res.json({
