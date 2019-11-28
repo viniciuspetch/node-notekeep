@@ -183,7 +183,7 @@ let apiPostSignup = function (req, res) {
     return;
   }
 
-  db.get(`SELECT usrn FROM user_acc WHERE usrn="${username}"`, function (err, row) {
+  db.get('SELECT usrn FROM user_acc WHERE usrn=?', [username], function (err, row) {
     // Check if username is already used
     if (row != undefined) {
       console.log('Username already exists');
@@ -194,7 +194,7 @@ let apiPostSignup = function (req, res) {
       return;
     }
     // Otherwise, create a new account
-    db.run(`INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES ("${username}", "${hash}", "${datetime}", "${datetime}")`, function () {
+    db.run('INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES (?,?,?,?)', [username, hash, datetime, datetime], function () {
       console.log('Username created');
       res.json({
         result: true
