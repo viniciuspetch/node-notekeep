@@ -238,7 +238,7 @@ let apiPostCreate = function (req, res) {
   let db = new sqlite3.Database('note.db');
 
   // Searching for user with this username
-  db.get(`SELECT id FROM user_acc WHERE usrn = "${username}"`, function (err, row) {
+  db.get('SELECT id FROM user_acc WHERE usrn = ?', [username], function (err, row) {
     if (!row) {
       console.log('No user found');
       res.redirect('/login');
