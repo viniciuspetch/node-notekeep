@@ -27,7 +27,10 @@ function readPost() {
     console.log(response);
     for (let i = 0; i < response.length; i++) {
       console.log(response[i]);
-      $('#noteList').append('<p>' + response[i].id + ' | ' + response[i].tags + '<br>' + response[i].content + '<br>' + response[i].lastupdated + ' | <a href="/edit/' + response[i].id + '">Edit</a> | <a id="noteItem_' + response[i].id + '" href="#">Delete</a></p>');
+
+      let currDate = new Date(response[i].lastupdated);
+
+      $('#noteList').append('<p>' + response[i].id + ' | ' + response[i].tags + '<br>' + response[i].content + '<br>' + currDate + ' | <a href="/edit/' + response[i].id + '">Edit</a> | <a id="noteItem_' + response[i].id + '" href="#">Delete</a></p>');
 
       let noteId = '#noteItem_' + response[i].id;
 
