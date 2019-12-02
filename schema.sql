@@ -15,14 +15,18 @@ CREATE TABLE
         creation integer not null,
         lastupdated integer not null,
         foreign key
-            (user_acc_id)
+            (user_id)
             references user_acc (id)
     );
 
 CREATE TABLE
     tags (
         id integer primary key,
-        tag text not null
+        user_id integer not null,        
+        tag text not null,
+        foreign key
+            (user_id)
+            references user_acc (id)
     );
 
 CREATE TABLE 
@@ -51,7 +55,7 @@ VALUES
     (1, 'note 3', 1750, 2250);
 
 INSERT INTO 
-    tags(tag)
+    tags(user_id, tag)
 VALUES
     ('tag 1'),
     ('tag 2'),
