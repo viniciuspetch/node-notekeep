@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const jwt = require('./server/jwt');
+const tag = require('./server/tag');
+
 const jwtSecret = 'nodejs';
 
 function isAlphaNumeric(str) {
@@ -587,6 +589,14 @@ app.post('/api/read', apiPostRead);
 app.post('/api/note', apiPostCreate);
 app.put('/api/note/:id', apiPostEdit);
 app.delete('/api/note/:id', apiDeleteNote);
+
+app.get('/tag', tag.webTag);
+
+app.get('/api/tag', tag.tagGet);
+app.get('/api/tag/:id', tag.tagGet);
+app.post('/api/tag', tag.tagPost);
+app.put('/api/tag/:id', tag.tagPut);
+app.delete('/api/tag/:id', tag.tagDelete);
 
 app.listen(8000, function () {
   console.log('Ready');
