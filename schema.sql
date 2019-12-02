@@ -57,9 +57,9 @@ VALUES
 INSERT INTO 
     tags(user_id, tag)
 VALUES
-    ('tag 1'),
-    ('tag 2'),
-    ('tag 3');
+    (1, 'tag 1'),
+    (1, 'tag 2'),
+    (1, 'tag 3');
 
 INSERT INTO 
     notes_tags(notes_id, tags_id)
