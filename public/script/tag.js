@@ -12,6 +12,7 @@ $(function () {
     console.log(data);
   });
 
+  /*
   // GET id
   $.ajax({
     url: "/api/tag/" + 1,
@@ -65,4 +66,5 @@ $(function () {
     console.log('DELETE /api/tag/:id');
     console.log(data);
   });
+  */
 })

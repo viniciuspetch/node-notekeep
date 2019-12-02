@@ -34,19 +34,20 @@ exports.verifyJWT = function (token, secret) {
 
 // Authentication middleware
 exports.jwtAuth = function (req, res, next) {
+  console.log('Log: jwt.jwtAuth(req, res, next)');
   if (!req.headers['authorization']) {
     console.log('Error: Empty auth header');
     res.sendStatus(401);
     return;
   }
 
-  let username = jwt.verifyJWT(req.headers['authorization'].split(' ')[1], jwtSecret);
+  let username = exports.verifyJWT(req.headers['authorization'].split(' ')[1], 'nodejs');
   if (!username) {
     console.log('Error: JWT Verification failed');
     res.sendStatus(401);
     return;
   }
-
-  req.locals.username = username;
+  console.log(username);
+  res.locals.username = username;
   next();
 }

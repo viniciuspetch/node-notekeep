@@ -592,7 +592,7 @@ app.delete('/api/note/:id', apiDeleteNote);
 
 app.get('/tag', tag.webTag);
 
-app.get('/api/tag', tag.tagGet);
+app.get('/api/tag', jwt.jwtAuth, tag.tagGet);
 app.get('/api/tag/:id', tag.tagGet);
 app.post('/api/tag', tag.tagPost);
 app.put('/api/tag/:id', tag.tagPut);

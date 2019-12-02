@@ -10,35 +10,19 @@ exports.webTag = function (req, res) {
 };
 
 exports.tagGet = function (req, res, next) {
-  console.log('\n[ROUTE] /api/tag GET');
-  let token = null;
-  if (req.headers['authorization']) {
-    token = req.headers['authorization'].split(' ')[1];
-  }
-  console.log('[VAR] token');
-  let jwtResult = jwt.verifyJWT(token, jwtSecret);
-  if (!jwtResult) {
-    console.log('LOG: JWT Verification failed');
-    res.json({
-      result: false,
-      status: 'JWT Verification failed'
-    });
-    return;
-  }
-  let username = jwtResult.username;
-  console.log('[VAR] username: ' + username);
+  console.log('Middleware: tagGet');
+
+  let username = res.locals.username;  
+  let id = req.params.id;
+
   if (!username) {
-    console.log('LOG: No username found');
-    res.json({
-      result: false,
-      status: 'No username found'
-    });
+    req.sendStatus(500);
     return;
   }
-  let db = new sqlite3.Database('note.db');
-  id = req.params.id;
+
   if (!id) {
     console.log('here');
+    let db = new sqlite3.Database('note.db');
     db.all('SELECT id, tag FROM tags', function (err, rows) {
       if (err) {
         console.log(err);
@@ -51,6 +35,7 @@ exports.tagGet = function (req, res, next) {
     });
   } else {
     console.log('/api/tag/:id');
+    let db = new sqlite3.Database('note.db');
     db.get('SELECT id, tag FROM tags WHERE id=?', [id], function (err, row) {
       if (err) {
         console.log(err);
