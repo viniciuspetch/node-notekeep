@@ -33,8 +33,8 @@ exports.verifyJWT = function (token, secret) {
 }
 
 // Authentication middleware
-exports.jwtAuth = function (req, res, next) {
-  console.log('Log: jwt.jwtAuth(req, res, next)');
+exports.auth = function (req, res, next) {
+  console.log('Middleware: jwt.auth');
   if (!req.headers['authorization']) {
     console.log('Error: Empty auth header');
     res.sendStatus(401);

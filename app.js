@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const jwt = require('./server/jwt');
-const tag = require('./server/tag');
+const tags = require('./server/tags');
 
 const jwtSecret = 'nodejs';
 
@@ -590,13 +590,15 @@ app.post('/api/note', apiPostCreate);
 app.put('/api/note/:id', apiPostEdit);
 app.delete('/api/note/:id', apiDeleteNote);
 
-app.get('/tag', tag.webTag);
+app.get('/tag', tags.web);
 
-app.get('/api/tag', jwt.jwtAuth, tag.tagGet);
-app.get('/api/tag/:id', tag.tagGet);
+app.get('/api/tag', jwt.auth, tags.getAll);
+app.get('/api/tag/:id', jwt.auth, tags.getSingle);
+/*
 app.post('/api/tag', tag.tagPost);
 app.put('/api/tag/:id', tag.tagPut);
 app.delete('/api/tag/:id', tag.tagDelete);
+*/
 
 app.listen(8000, function () {
   console.log('Ready');
