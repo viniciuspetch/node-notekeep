@@ -1,55 +1,54 @@
-const jwt = require('./jwt');
 const path = require('path');
 const sqlite3 = require('sqlite3');
 
-const jwtSecret = 'nodejs';
-
-exports.webTag = function (req, res) {
-  console.log('[ROUTE] /tag GET');
+exports.web = function (req, res) {
+  console.log('Webpage: tag');
   res.sendFile(path.join(__dirname + '/../public/html/tag.html'));
 };
 
-exports.tagGet = function (req, res, next) {
-  console.log('Middleware: tagGet');
-
-  let username = res.locals.username;  
-  let id = req.params.id;
+exports.getAll = function (req, res, next, username) {
+  console.log('Middleware: getAllTags');
 
   if (!username) {
-    req.sendStatus(500);
-    return;
+    res.sendStatus(500);
+    return next();
   }
 
-  if (!id) {
-    console.log('here');
-    let db = new sqlite3.Database('note.db');
-    db.all('SELECT id, tag FROM tags', function (err, rows) {
-      if (err) {
-        console.log(err);
-        res.sendStatus(500);
-        return;
-      }
-      res.status(200);
-      res.send(rows);
+  let db = new sqlite3.Database('note.db');
+  db.all('SELECT id, tag FROM tags', function (err, rows) {
+    if (err) {
+      console.log(err);
+      res.sendStatus(500);
       return;
-    });
-  } else {
-    console.log('/api/tag/:id');
-    let db = new sqlite3.Database('note.db');
-    db.get('SELECT id, tag FROM tags WHERE id=?', [id], function (err, row) {
-      if (err) {
-        console.log(err);
-        res.sendStatus(500);
-        return;
-      }
-      res.status(200);
-      res.send(row);
-      return;
-    });
-  }
-}
+    }
+    res.status(200);
+    res.send(rows);
+    return next();
+  });
+};
 
-exports.tagPost = function (req, res, next) {
+exports.getSingle = function (req, res, next, username) {
+  console.log('Middleware: getSingleTag');
+
+  if (!username) {
+    res.sendStatus(500);
+    return next();
+  }
+
+  let db = new sqlite3.Database('note.db');
+  db.get('SELECT id, tag FROM tags WHERE id=?', [id], function (err, row) {
+    if (err) {
+      console.log(err);
+      res.sendStatus(500);
+      return;
+    }
+    res.status(200);
+    res.send(row);
+    return next();
+  });
+};
+
+exports.post = function (req, res, next) {
   console.log('\n[ROUTE] /api/tag POST');
   let token = null;
   if (req.headers['authorization']) {
@@ -99,13 +98,13 @@ exports.tagPost = function (req, res, next) {
   });
 }
 
-exports.tagPut = function (req, res, next) {
+exports.put = function (req, res, next) {
   console.log('\n[ROUTE] /api/tag/:id PUT');
   res.sendStatus(200);
   return next();
 }
 
-exports.tagDelete = function (req, res, next) {
+exports.delete = function (req, res, next) {
   console.log('\n[ROUTE] /api/tag/:id DELETE');
   res.sendStatus(200);
   return next();
