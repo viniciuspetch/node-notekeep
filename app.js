@@ -594,11 +594,9 @@ app.get('/tag', tags.web);
 
 app.get('/api/tag', jwt.auth, tags.getAll);
 app.get('/api/tag/:id', jwt.auth, tags.getSingle);
-/*
-app.post('/api/tag', tag.tagPost);
-app.put('/api/tag/:id', tag.tagPut);
-app.delete('/api/tag/:id', tag.tagDelete);
-*/
+app.post('/api/tag', jwt.auth, tags.post);
+app.put('/api/tag/:id', jwt.auth, tags.put);
+app.delete('/api/tag/:id', jwt.auth, tags.delete);
 
 app.listen(8000, function () {
   console.log('Ready');
