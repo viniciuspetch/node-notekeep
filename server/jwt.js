@@ -1,4 +1,5 @@
 const jsonwebtoken = require('jsonwebtoken');
+const sqlite3 = require('sqlite3');
 
 // JWT Creation
 exports.newJWT = function (username, secret) {
@@ -15,7 +16,7 @@ exports.newJWT = function (username, secret) {
 
 // JWT Verification
 exports.verifyJWT = function (token, secret) {
-  console.log('Log: verifyJWT(token, secret)');
+  console.log('Function: verifyJWT');
   if (token == null) {
     console.log('Request Error: Token is null');
     return false;
@@ -47,7 +48,10 @@ exports.auth = function (req, res, next) {
     res.sendStatus(401);
     return;
   }
-  console.log(username);
-  res.locals.username = username;
-  next();
+  let db = new sqlite3.Database('note.db');
+  db.get('SELECT id FROM user_acc WHERE usrn = ?', [username], function (err, row) {
+    res.locals.username = username;
+    res.locals.user_id = row.id;
+    next();
+  });
 }
