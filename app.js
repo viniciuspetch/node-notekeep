@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const jwt = require('./server/jwt');
 const tags = require('./server/tags');
 const notes = require('./server/notes');
+const web = require('./server/web');
 
 let app = express();
 
@@ -12,25 +13,18 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 
-/*
-app.get('/', webGetIndex);
-app.get('/login', webGetLogin);
-app.get('/signup', webGetSignup);
-app.get('/signout', webGetSignout);
-app.get('/create', webGetCreate);
-app.get('/read', webGetRead);
-app.get('/edit/:id', webGetEdit);
+app.get('/', web.index);
+app.get('/login', web.login);
+app.get('/signup', web.signup);
+app.get('/signout', web.signout);
+app.get('/create', web.create);
+app.get('/read', web.read);
+app.get('/edit/:id', web.edit);
 app.get('/tag', tags.web);
 
+/*
 app.post('/api/login', apiPostLogin);
 app.post('/api/signup', apiPostSignup);
-
-app.get('/api/read', apiPostRead);
-app.post('/api/read', apiPostRead);
-
-app.post('/api/note', apiPostCreate);
-app.put('/api/note/:id', apiPostEdit);
-app.delete('/api/note/:id', apiDeleteNote);
 */
 
 app.get('/api/note', jwt.auth, notes.getAll);
