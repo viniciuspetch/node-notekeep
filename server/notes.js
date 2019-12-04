@@ -21,6 +21,26 @@ exports.getAll = function (req, res, next) {
   });
 };
 
+exports.getSingle = function (req, res, next) {
+  console.log('Middleware: notes.getSingle');
+  if (!res.locals.username) {
+    res.sendStatus(500);
+    return next();
+  }
+
+  let db = new sqlite3.Database('note.db');
+  db.all('SELECT id, content, lastupdated FROM notes WHERE user_id = ? AND id = ?', [res.locals.user_id, req.params.id], function (err, rows) {
+    if (err) {
+      console.log(err);
+      res.sendStatus(500);
+      return;
+    }
+    res.status(200);
+    res.send(rows);
+    return next();
+  });
+};
+
 exports.post = function (req, res, next) {
   console.log('Middleware: notes.post');
   if (!res.locals.username) {
