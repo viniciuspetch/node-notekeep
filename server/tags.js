@@ -77,13 +77,43 @@ exports.post = function (req, res, next) {
 }
 
 exports.put = function (req, res, next) {
-  console.log('\n[ROUTE] /api/tag/:id PUT');
-  res.sendStatus(200);
-  return next();
+  console.log('Middleware: tags.put');
+
+  if (!res.locals.username) {
+    res.sendStatus(500);
+    return next();
+  }
+
+  let db = new sqlite3.Database('note.db');
+
+  db.run('UPDATE tags SET tag = ? WHERE id = ? and user_id = ?', [req.body.tag, req.params.id, res.locals.user_id], function (err, row) {
+    if (err) {
+      console.log(err);
+      res.sendStatus(500);
+      return;
+    }
+    res.sendStatus(200);
+    return;
+  });
 }
 
 exports.delete = function (req, res, next) {
-  console.log('\n[ROUTE] /api/tag/:id DELETE');
-  res.sendStatus(200);
-  return next();
+  console.log('Middleware: tags.delete');
+
+  if (!res.locals.username) {
+    res.sendStatus(500);
+    return next();
+  }
+
+  let db = new sqlite3.Database('note.db');
+
+  db.run('UPDATE tags SET tag = ? WHERE id = ? and user_id = ?', [req.body.tag, req.params.id, res.locals.user_id], function (err, row) {
+    if (err) {
+      console.log(err);
+      res.sendStatus(500);
+      return;
+    }
+    res.sendStatus(200);
+    return;
+  });
 }
