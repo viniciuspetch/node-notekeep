@@ -86,7 +86,7 @@ exports.put = function (req, res, next) {
 
   let db = new sqlite3.Database('note.db');
 
-  db.run('UPDATE tags SET tag = ? WHERE id = ? and user_id = ?', [req.body.tag, req.params.id, res.locals.user_id], function (err, row) {
+  db.run('UPDATE tags SET tag = ? WHERE id = ? AND user_id = ?', [req.body.tag, req.params.id, res.locals.user_id], function (err) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
@@ -107,7 +107,7 @@ exports.delete = function (req, res, next) {
 
   let db = new sqlite3.Database('note.db');
 
-  db.run('UPDATE tags SET tag = ? WHERE id = ? and user_id = ?', [req.body.tag, req.params.id, res.locals.user_id], function (err, row) {
+  db.run('DELETE FROM tags WHERE id = ? AND user_id = ?', [req.params.id, res.locals.user_id], function (err) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
