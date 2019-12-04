@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const jwt = require('./server/jwt');
 const tags = require('./server/tags');
 const notes = require('./server/notes');
+const login = require('./server/login');
 const web = require('./server/web');
 
 let app = express();
@@ -21,10 +22,8 @@ app.get('/create', web.create);
 app.get('/read', web.read);
 app.get('/edit/:id', web.edit);
 
-/*
-app.post('/api/login', apiPostLogin);
-app.post('/api/signup', apiPostSignup);
-*/
+app.post('/api/login', login.login);
+app.post('/api/signup', login.signup);
 
 app.get('/api/note', jwt.auth, notes.getAll);
 app.get('/api/note/:id', jwt.auth, notes.getSingle);
