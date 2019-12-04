@@ -37,7 +37,7 @@ app.get('/api/note', jwt.auth, notes.getAll);
 //app.get('/api/note/:id', jwt.auth, notes.getSingle);
 app.post('/api/note', jwt.auth, notes.post);
 app.put('/api/note/:id', jwt.auth, notes.put);
-//app.delete('/api/note/:id', jwt.auth, notes.delete);
+app.delete('/api/note/:id', jwt.auth, notes.delete);
 
 app.get('/api/tag', jwt.auth, tags.getAll);
 app.get('/api/tag/:id', jwt.auth, tags.getSingle);
