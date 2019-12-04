@@ -1,41 +1,36 @@
 const path = require('path');
 
-let login = function (req, res) {
+exports.login = function (req, res) {
   console.log('View: login');
-  res.sendFile(path.join(__dirname + '/../public/html/login.html');
+  res.sendFile(path.join(__dirname + '/../public/html/login.html'));
 };
 
-let signup = function (req, res) {
+exports.signup = function (req, res) {
   console.log('View: signup');
-  res.sendFile(path.join(__dirname + '/../public/html/signup.html');
+  res.sendFile(path.join(__dirname + '/../public/html/signup.html'));
 };
 
-let signout = function (req, res) {
+exports.signout = function (req, res) {
   console.log('View: signout');
-  res.sendFile(path.join(__dirname + '/../public/html/signout.html');
+  res.sendFile(path.join(__dirname + '/../public/html/signout.html'));
 };
 
-let index = function (req, res) {
+exports.index = function (req, res) {
   console.log('View: index.html');
-  res.sendFile(path.join(__dirname + '/../public/html/index.html');
+  res.sendFile(path.join(__dirname + '/../public/html/index.html'));
 };
 
-let create = function (req, res) {
+exports.create = function (req, res) {
   console.log('View: create.html');
-  res.sendFile(path.join(__dirname + '/../public/html/create.html');
+  res.sendFile(path.join(__dirname + '/../public/html/create.html'));
 };
 
-let read = function (req, res) {
+exports.read = function (req, res) {
   console.log('View: read.html');
-  res.sendFile(path.join(__dirname + '/../public//html/read.html');
+  res.sendFile(path.join(__dirname + '/../public//html/read.html'));
 };
 
-let edit = function (req, res) {
+exports.edit = function (req, res) {
   console.log('View: edit.html');
-  res.sendFile(path.join(__dirname + '/../public/html/edit.html');
-};
-
-exports.tag = function (req, res) {
-  console.log('Webpage: tag');
-  res.sendFile(path.join(__dirname + '/../public/html/tag.html'));
+  res.sendFile(path.join(__dirname + '/../public/html/edit.html'));
 };
