@@ -20,7 +20,6 @@ app.get('/signout', web.signout);
 app.get('/create', web.create);
 app.get('/read', web.read);
 app.get('/edit/:id', web.edit);
-app.get('/tag', tags.web);
 
 /*
 app.post('/api/login', apiPostLogin);
