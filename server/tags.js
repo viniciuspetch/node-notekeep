@@ -1,11 +1,6 @@
 const path = require('path');
 const sqlite3 = require('sqlite3');
 
-exports.web = function (req, res) {
-  console.log('Webpage: tag');
-  res.sendFile(path.join(__dirname + '/../public/html/tag.html'));
-};
-
 exports.getAll = function (req, res, next) {
   console.log('Middleware: tags.getAll');
   if (!res.locals.username) {
