@@ -63,20 +63,28 @@ $(function () {
 
   console.log(noteId);
 
+  // Get current note
   $.ajax({
-    url: "/api/read",
-    method: "POST",
+    url: "/api/note/" + noteId,
+    method: "GET",
     headers: {
       "Authorization": "Bearer " + localStorage.getItem('token'),
     },
-    data: {
-      id: noteId,
-    },
-  }).done((data) => {
-    console.log(data);
-    $("#content").val(data.content);
-    $("#tags").val(data.tags);
+  }).done((data, textStatus, xhr) => {
+    console.log('(' + xhr.status + ') ' + textStatus + '/' + xhr.statusText + ': ' + data);
+    $("#content").val(data[0].content);
+    $("#tags").val(data[0].tags);
+  }).fail((xhr, textStatus, err) => {
+    console.log('(' + xhr.status + ') ' + textStatus + '/' + err + ': ' + xhr.responseText);
+  }).then(() => {
+    console.log('/api/note/:id POST');
   });
+  
+  /*done((data) => {
+    console.log(data);
+    
+  });
+  */
   /*
   $.post(url, {
     token,
