@@ -79,21 +79,4 @@ $(function () {
   }).then(() => {
     console.log('/api/note/:id POST');
   });
-  
-  /*done((data) => {
-    console.log(data);
-    
-  });
-  */
-  /*
-  $.post(url, {
-    token,
-    noteId
-  }, (data) => {
-    console.log(data[0]);
-
-    $("#content").val(data[0].content);
-    $("#tags").val(data[0].tags);
-  });
-  */
 });
