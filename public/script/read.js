@@ -34,9 +34,9 @@ function readPost() {
 
       let noteId = '#noteItem_' + response[i].id;
 
-      console.log($(noteId).click(() => {
+      $(noteId).click(() => {
         apiDelete(response[i].id);
-      }));
+      });
     }
     return false;
   });
