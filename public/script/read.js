@@ -18,7 +18,7 @@ function apiDelete(id) {
 function readPost() {
   console.log('LOG: readPost()');
   $.ajax({
-    url: "/api/read",
+    url: "/api/note",
     method: "GET",
     headers: {
       "Authorization": "Bearer " + localStorage.getItem('token'),
