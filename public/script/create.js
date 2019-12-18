@@ -10,19 +10,18 @@ function isAlphaNumeric(str) {
   return true;
 };
 
-function validateNote(content, tags) {
+function validateNote(content, tagList) {
   if (!content) {
     alert('Content is empty');
     return false;
   }
-  let tagsList = tags.split(',');
-  for (let i = 0; i < tagsList.length; i++) {
-    if (!isAlphaNumeric(tagsList[i])) {
+  
+  for (let i = 0; i < tagList.length; i++) {
+    if (!isAlphaNumeric(tagList[i])) {
       alert('Tags must have letters or numbers only');
       return false;
     }
   }
-
   return true;
 }
 
@@ -30,9 +29,12 @@ function create() {
   console.log('create()');
 
   let content = $('#note').val();
-  let tags = $('#tags').val();
+  let tagString = $('#tags').val();
+  let tagList = tagString.split(',').map(function(tag) {
+    return tag.trim();
+  });
 
-  if (validateNote(content, tags)) {
+  if (validateNote(content, tagList)) {
     $.ajax({
       url: '/api/note',
       method: 'POST',
@@ -41,10 +43,10 @@ function create() {
       },
       data: {
         content,
-        tags,
+        tagList,
       },
     }).done(() => {
-      window.location.href = '/read';
+      //window.location.href = '/read';
     });
   }
   return false;
