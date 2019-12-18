@@ -46,7 +46,7 @@ function create() {
         tagList,
       },
     }).done(() => {
-      //window.location.href = '/read';
+      window.location.href = '/read';
     });
   }
   return false;
