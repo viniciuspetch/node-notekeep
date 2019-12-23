@@ -42,8 +42,8 @@ function create() {
         "Authorization": "Bearer " + localStorage.getItem('token'),
       },
       data: {
-        content,
-        tagList,
+        content: content,
+        'tags': tagList,
       },
     }).done(() => {
       window.location.href = '/read';
