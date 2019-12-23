@@ -11,7 +11,7 @@ function apiDelete(id) {
   }).fail((xhr, textStatus, err) => {
     console.log('(' + xhr.status + ') ' + textStatus + '/' + err + ': ' + xhr.responseText);
   }).then(() => {
-    console.log('Note deleted');
+    window.location.href = '/read';
   });
 }
 
