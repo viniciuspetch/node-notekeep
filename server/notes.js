@@ -14,7 +14,7 @@ exports.getAll = function (req, res, next) {
       console.log(err);
       res.sendStatus(500);
       return;
-    }
+    }    
     res.status(200);
     res.send(rows);
     return next();
@@ -99,8 +99,6 @@ exports.post = function (req, res, next) {
                 res.sendStatus(500);
                 return;
               }
-              res.sendStatus(200);
-              return;
             });
           })
         } else {
@@ -111,12 +109,12 @@ exports.post = function (req, res, next) {
               res.sendStatus(500);
               return;
             }
-            res.sendStatus(200);
-            return;
           });
         }
       });
-    }
+    }    
+    res.sendStatus(200);
+    return;
   });
 }
 
