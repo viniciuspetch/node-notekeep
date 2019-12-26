@@ -2,6 +2,18 @@ const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const jwt = require('./jwt');
 
+function isAlphaNumeric(str) {
+  for (let i = 0; i < str.length; i++) {
+    let code = str.charCodeAt(i);
+    if (!(code > 47 && code < 58) && // numeric (0-9)
+      !(code > 64 && code < 91) && // upper alpha (A-Z)
+      !(code > 96 && code < 123)) { // lower alpha (a-z)
+      return false;
+    }
+  }
+  return true;
+};
+
 exports.login = function (req, res) {
   console.log('Middleware: login.login');
 
