@@ -9,14 +9,43 @@ exports.getAll = function (req, res, next) {
   }
 
   let db = new sqlite3.Database('note.db');
-  db.all('SELECT id, content, lastupdated FROM notes WHERE user_id = ?', [res.locals.user_id], function (err, rows) {
+  db.all('SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags LEFT JOIN tags WHERE notes.user_id = ? AND notes.id = notes_tags.notes_id AND notes_tags.tags_id = tags.id ORDER BY notes.id', [res.locals.user_id], function (err, rows) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
       return;
-    }    
+    }
+
+    let currId = null;
+    let newRow = null;
+    let newTagList = [];
+    let newRowList = [];
+
+    console.log(typeof (rows));
+    console.log(typeof (newTagList));
+
+    for (let i = 0; i < rows.length; i++) {
+      if (currId != rows[i].id) {
+        if (currId != null) {
+          newRow.tag = newTagList;
+          newRowList.push(newRow);
+        }
+        newTagList = [];
+        newRow = {
+          id: rows[i].id,
+          lastupdated: rows[i].lastupdated
+        };
+        currId = rows[i].id;
+      }
+      newTagList.push(rows[i].tag);
+    }
+
+    newRow.tag = newTagList;
+    newRowList.push(newRow);
+    console.log(newRowList);
+
     res.status(200);
-    res.send(rows);
+    res.send(newRowList);
     return next();
   });
 };
@@ -112,7 +141,7 @@ exports.post = function (req, res, next) {
           });
         }
       });
-    }    
+    }
     res.sendStatus(200);
     return;
   });
