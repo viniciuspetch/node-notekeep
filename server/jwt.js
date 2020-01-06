@@ -7,11 +7,16 @@ exports.newJWT = function (username, secret) {
     console.log('Internal error: no username or secret');
     return false;
   }
+  /*
   return jsonwebtoken.sign({
     username: username
   }, secret, {
     expiresIn: '24h'
   });
+  */
+ return jsonwebtoken.sign({
+  username: username
+}, secret);
 }
 
 // JWT Verification
