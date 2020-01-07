@@ -47,6 +47,7 @@ function edit() {
       },
     }).done(() => {
       console.log('Note modified');
+      window.location.href = '../read';
     });
   };
 
@@ -72,8 +73,14 @@ $(function () {
     },
   }).done((data, textStatus, xhr) => {
     console.log('(' + xhr.status + ') ' + textStatus + '/' + xhr.statusText + ': ' + data);
-    $("#content").val(data[0].content);
-    $("#tags").val(data[0].tags);
+    $("#content").val(data.content);
+
+    // Convert array to string
+    let tagList = '';
+    for (let i = 0; i < data.tag.length; i++) {
+      tagList += data.tag[i] + ',';
+    }
+    $("#tags").val(tagList);
   }).fail((xhr, textStatus, err) => {
     console.log('(' + xhr.status + ') ' + textStatus + '/' + err + ': ' + xhr.responseText);
   }).then(() => {
