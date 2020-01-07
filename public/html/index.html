@@ -4,17 +4,41 @@
 <head>
   <meta charset="UTF-8">
   <title>Notekeep</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
   <script type="text/javascript" src="/script/index.js"></script>
+  <link rel="stylesheet" href="../style/index.css">
 </head>
 
 <body>
-  <div id="isLogged"></div> |
-  <a href="/create">Create</a> |
-  <a href="/read">Read </a> |
-  <a href="/login">Login</a> |
-  <a href="/signup">Sign Up</a> |
-  <a href="/signout">Sign Out</a> |
+  <div class="container main">
+    <div class="row justify-content-center">
+      <div class="card-item col-4">
+        <h1>Node.js Notekeeper</h1>
+      </div>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-4 card-item logged" id="isLogged"></div>
+    </div>
+    <div class="row justify-content-center">
+      <a class="button col-4" href="/create">Create</a>
+    </div>
+    <div class="row justify-content-center">
+      <a class="button col-4" href="/read">Read </a>
+    </div>
+    <div class="row justify-content-center">
+      <a class="button col-4" href="/login">Login</a>
+    </div>
+    <div class="row justify-content-center">
+      <a class="button col-4" href="/signup">Sign Up</a>
+    </div>
+    <div class="row justify-content-center">
+      <a class="button col-4" href="/signout">Sign Out</a>
+    </div>
+  </div>
 </body>
 
 </html>
