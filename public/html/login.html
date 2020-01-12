@@ -4,18 +4,36 @@
 <head>
   <meta charset="UTF-8">
   <title>Notekeep</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script type="text/javascript" src="/script/login.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+  <script src="/script/login.js"></script>
+
+  <link rel="stylesheet" href="../style/login.css">
 </head>
 
 <body>
-  <a href="/">Home</a><br>
-  <p>Log in</p>
-  <form action="javascript:;" onsubmit="login()">
-    <input id="username" type="text" name="username"> |
-    <input id="password" type="text" name="password"> |
-    <input type="submit" value="Send">
-  </form>
+  <div class="body">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Login</li>
+      </ol>
+    </nav>
+    <form class="login-form" action="javascript:;" onsubmit="login()">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" type="text" name="username" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="text" name="password" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
 </body>
 
 </html>
