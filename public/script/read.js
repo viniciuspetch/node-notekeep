@@ -33,10 +33,36 @@ function readPost() {
         tagList += response[i].tag[j] + ', ';
       }
 
+      console.log(response[i].lastupdated);
       let currDate = new Date(response[i].lastupdated);
 
-      $('#noteList').append('<p>' + response[i].id + ' | ' + tagList + '<br>' + response[i].content + '<br>' + currDate + ' | <a href="/edit/' + response[i].id + '">Edit</a> | <a id="noteItem_' + response[i].id + '" href="#">Delete</a></p>');
+      $('#noteList').append(
+        '<div class="col-4 note-item">' +
+        '<div class="card-item">' +
+        '<div class="note-body">' +
+        '<div class="note-id">' + response[i].id + '</div>' +
+        '<div class="note-tags">' + tagList + '</div>' +
+        '<div class="note-content">' + response[i].content + '</div>' +
+        '<div>' + currDate + '</div>' +
+        '</div>' +
+        '<div class="card-button-outside">' +
+        '<a class="card-button-left" href="/edit/' + response[i].id + '">Edit</a>' +
+        '</div>' +
+        '<div class="card-button-outside">' +
+        '<a class="card-button-right" id="noteItem_' + response[i].id + '" href="#">Delete</a>' +
+        '</div>' +
+        '</div>' +
+        '</div>');
 
+      /*
+      $('#noteList').append('<div class="col-4"><div class="card-item">' +
+        '<p>' +
+        response[i].id + ' | ' + tagList + '<br>' + response[i].content + '<br>' + currDate + '</p>' +
+        '<br>' +
+        '<a class="card-button" href="/edit/' + response[i].id + '">Edit</a>' +
+        '<a class="card-button" id="noteItem_' + response[i].id + '" href="#">Delete</a>' +
+        '</div></div>');
+      */
       let noteId = '#noteItem_' + response[i].id;
 
       $(noteId).click(() => {

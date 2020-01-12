@@ -4,15 +4,26 @@
 <head>
   <meta charset="UTF-8">
   <title>Notekeep</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
   <script type="text/javascript" src="/script/read.js"></script>
+  
+  <link rel="stylesheet" href="../style/read.css">
+  <link rel="stylesheet" href="../style/style.css">
 </head>
 
 <body>
-  <a href="/">Home</a><br>
-  <p>List of notes</p>
-  <a id="updateLink" href="#">Update</a><br>
-  <div id="noteList"></div>
+
+  <div class="container main">
+    <a href="/">Home</a><br>
+    <a id="updateLink" href="#">Update</a><br>
+    <p>List of notes</p>
+    <div class="row justify-content-center" id="noteList">
+    </div>
+  </div>
 </body>
 
 </html>
