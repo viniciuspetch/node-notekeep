@@ -28,7 +28,7 @@ function validateNote(content, tagList) {
 function create() {
   console.log('create()');
 
-  let content = $('#note').val();
+  let content = $('#content').val();
   let tagString = $('#tags').val();
   let tagList = tagString.split(',').map(function(tag) {
     return tag.trim();
