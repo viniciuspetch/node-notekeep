@@ -16,16 +16,20 @@ exports.getAll = function (req, res, next) {
       return;
     }
 
+    console.log(rows);
+
     let currId = null;
     let newRow = null;
     let newTagList = [];
     let newRowList = [];
     if (rows.length > 0) {
+      /////////////////////
       newRow = {
         id: rows[0].id,
         content: rows[0].content,
         lastupdated: rows[0].lastupdated,
       };
+      newTagList.push(rows[0].tag);
 
       for (let i = 1; i < rows.length; i++) {
         // New note, reset variables
@@ -46,6 +50,7 @@ exports.getAll = function (req, res, next) {
       newRow.tag = newTagList;
 
       newRowList.push(newRow);
+      ////////////////////
     }
 
     res.status(200);
