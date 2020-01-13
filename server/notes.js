@@ -283,7 +283,16 @@ exports.delete = function (req, res, next) {
       res.sendStatus(500);
       return;
     }
-    res.sendStatus(200);
-    return next();
+
+    // Delete all notes-tags relationship entries for the edited note
+    db.run('DELETE FROM notes_tags WHERE notes_id = ?', [req.params.id], function (err) {
+      if (err) {
+        console.log(err);
+        res.sendStatus(500);
+        return;
+      }
+      res.sendStatus(200);
+      return next();
+    });
   });
 };
