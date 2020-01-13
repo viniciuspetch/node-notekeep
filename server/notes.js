@@ -167,7 +167,7 @@ exports.post = function (req, res, next) {
 }
 
 exports.put = function (req, res, next) {
-  console.log('Middleware: notes.put');
+  console.log('\nMiddleware: notes.put');
   if (!res.locals.username) {
     res.sendStatus(500);
     return next();
@@ -187,6 +187,7 @@ exports.put = function (req, res, next) {
 
   let db = new sqlite3.Database('note.db');
   let datetime = Date.now();
+  // Update the note
   db.run('UPDATE notes SET content = ?, lastupdated = ? WHERE id = ? AND user_id = ?', [req.body.content, datetime, noteId, userId], function (err) {
     if (err) {
       console.log(err);
@@ -196,29 +197,35 @@ exports.put = function (req, res, next) {
 
     if (req.body.tags) {
       let tagList = req.body.tags;
+      console.log('There are tags to update');
+      console.log('Type of received tags:' + typeof (tagList));
+
       if (typeof (tagList) == 'string') {
         tagList = [tagList];
       }
       let tagListLength = tagList.length;
+      console.log('List of tags:' + tagList);
+      console.log('Number of tags:' + tagListLength);
 
-      for (let i = 0; i < tagListLength; i++) {
-        db.get('SELECT id FROM tags WHERE tag = ? AND user_id = ?', [tagList[i], userId], function (err, row) {
-          console.log('Get tag');
-          if (err) {
-            console.log(err);
-            res.sendStatus(500);
-            return;
-          }
-          console.log(noteId);
-          db.run('DELETE FROM notes_tags WHERE notes_id = ?', [noteId], function (err) {
-            console.log('Delete note-tag relationship');
+      // Delete all notes-tags relationship entries for the edited note
+      db.run('DELETE FROM notes_tags WHERE notes_id = ?', [noteId], function (err) {
+        console.log('Delete note-tag relationship');
+        if (err) {
+          console.log(err);
+          res.sendStatus(500);
+          return;
+        }
+
+        // For each received tag, get its ID
+        for (let i = 0; i < tagListLength; i++) {
+          db.get('SELECT id FROM tags WHERE tag = ? AND user_id = ?', [tagList[i], userId], function (err, row) {
+            console.log('Get tag');
             if (err) {
               console.log(err);
               res.sendStatus(500);
               return;
             }
-            /*
-            console.log(row);
+            // If it doesn't exist, insert it and then create the relationship
             if (!row) {
               db.run('INSERT into tags(user_id, tag) VALUES (?, ?)', [userId, tagList[i]], function (err) {
                 if (err) {
@@ -236,7 +243,9 @@ exports.put = function (req, res, next) {
                   }
                 });
               })
-            } else {
+            }
+            // Otherwise, just add the relationship
+            else {
               let tagId = row.id;
               db.run('INSERT into notes_tags(notes_id, tags_id) VALUES (?, ?)', [noteId, tagId], function (err) {
                 if (err) {
@@ -246,12 +255,10 @@ exports.put = function (req, res, next) {
                 }
               });
             }
-            */
-          });
-        });
-      }
+          })
+        };
+      });
     }
-
     res.sendStatus(200);
     return next();
   });
