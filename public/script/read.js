@@ -1,7 +1,12 @@
 function search() {
-  console.log('Hello');
-  $(".note-body").each(function() {
-    console.log($(this).children(".note-content").text());
+  let searchString = $('#searchbar').val();
+  $(".note-item").each(function () {
+    if ($(this).find(".note-content").text().includes(searchString) || $(this).find(".note-tags").text().includes(searchString)) {
+      $(this).show();
+    } else {
+      $(this).hide();
+    }
+
   });
 }
 
