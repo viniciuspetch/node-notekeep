@@ -1,3 +1,10 @@
+function search() {
+  console.log('Hello');
+  $(".note-body").each(function() {
+    console.log($(this).children(".note-content").text());
+  });
+}
+
 function apiDelete(id) {
   console.log('[LOG] apiDelete(id)');
   $.ajax({
@@ -53,16 +60,6 @@ function readPost() {
         '</div>' +
         '</div>' +
         '</div>');
-
-      /*
-      $('#noteList').append('<div class="col-4"><div class="card-item">' +
-        '<p>' +
-        response[i].id + ' | ' + tagList + '<br>' + response[i].content + '<br>' + currDate + '</p>' +
-        '<br>' +
-        '<a class="card-button" href="/edit/' + response[i].id + '">Edit</a>' +
-        '<a class="card-button" id="noteItem_' + response[i].id + '" href="#">Delete</a>' +
-        '</div></div>');
-      */
       let noteId = '#noteItem_' + response[i].id;
 
       $(noteId).click(() => {

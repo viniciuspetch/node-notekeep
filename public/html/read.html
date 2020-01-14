@@ -10,18 +10,20 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 
   <script src="/script/read.js"></script>
-  
+
   <link rel="stylesheet" href="../style/read.css">
   <link rel="stylesheet" href="../style/style.css">
 </head>
 
 <body>
-
-  <div class="container main">
-    <a href="/">Home</a><br>
-    <a id="updateLink" href="#">Update</a><br>
-    <p>List of notes</p>
-    <div class="row justify-content-center" id="noteList">
+  <div class="body">
+    <input type="text" id="searchbar" onkeyup="return search()" class="form-control">
+    <div class="container main">
+      <a href="/">Home</a><br>
+      <a id="updateLink" href="#">Update</a><br>
+      <p>List of notes</p>
+      <div class="row justify-content-center" id="noteList">
+      </div>
     </div>
   </div>
 </body>
