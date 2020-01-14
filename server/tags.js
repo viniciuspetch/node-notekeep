@@ -1,6 +1,26 @@
 const path = require('path');
 const sqlite3 = require('sqlite3');
 
+exports.getAllUsed = function (req, res, next) {
+  console.log('Middleware: tags.getAllUsed');
+  if (!res.locals.username) {
+    res.sendStatus(500);
+    return next();
+  }
+
+  let db = new sqlite3.Database('note.db');
+  db.all('SELECT tags.id, tags.tag FROM tags RIGHT JOIN notes_tags WHERE tags.user_id = ? ', [res.locals.user_id], function (err, rows) {
+    if (err) {
+      console.log(err);
+      res.sendStatus(500);
+      return;
+    }
+    res.status(200);
+    res.send(rows);
+    return next();
+  });
+}
+
 exports.getAll = function (req, res, next) {
   console.log('Middleware: tags.getAll');
   if (!res.locals.username) {
