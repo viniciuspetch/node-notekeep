@@ -9,30 +9,30 @@ exports.getAll = function (req, res, next) {
   }
 
   let db = new sqlite3.Database('note.db');
-  db.all('SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags LEFT JOIN tags WHERE notes.user_id = ? AND notes.id = notes_tags.notes_id AND notes_tags.tags_id = tags.id ORDER BY notes.id, tags.id', [res.locals.user_id], function (err, rows) {
+  //let query = 'SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags LEFT JOIN tags WHERE notes.user_id = ? AND notes.id = notes_tags.notes_id AND notes_tags.tags_id = tags.id ORDER BY notes.id, tags.id';
+  let query = 'SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = ? ORDER BY notes.id, tags.id';
+  db.all(query, [res.locals.user_id], function (err, rows) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
       return;
     }
 
-    console.log(rows);
-
     let currId = null;
     let newRow = null;
     let newTagList = [];
     let newRowList = [];
     if (rows.length > 0) {
-      /////////////////////
       newRow = {
         id: rows[0].id,
         content: rows[0].content,
         lastupdated: rows[0].lastupdated,
       };
-      newTagList.push(rows[0].tag);
-
+      if (rows[0].tag != null) {
+        newTagList.push(rows[0].tag);
+      }
+      currId = rows[0].id;
       for (let i = 1; i < rows.length; i++) {
-        // New note, reset variables
         if (currId != rows[i].id) {
           newRow.tag = newTagList;
           newRowList.push(newRow);
@@ -44,15 +44,15 @@ exports.getAll = function (req, res, next) {
           };
           currId = rows[i].id;
         }
-        // Keep adding current tag to the tag list
-        newTagList.push(rows[i].tag);
+        if (rows[i].tag != 'null') {
+          newTagList.push(rows[i].tag);
+        }
       }
       newRow.tag = newTagList;
-
       newRowList.push(newRow);
-      ////////////////////
     }
 
+    console.log(newRowList);
     res.status(200);
     res.send(newRowList);
     return next();
