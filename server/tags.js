@@ -9,12 +9,13 @@ exports.getAllUsed = function (req, res, next) {
   }
 
   let db = new sqlite3.Database('note.db');
-  db.all('SELECT tags.id, tags.tag FROM tags RIGHT JOIN notes_tags WHERE tags.user_id = ? ', [res.locals.user_id], function (err, rows) {
+  db.all('SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags WHERE tags.user_id = ? AND notes_tags.tags_id = tags.id', [res.locals.user_id], function (err, rows) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
       return;
     }
+    console.log(rows);
     res.status(200);
     res.send(rows);
     return next();

@@ -37,6 +37,8 @@ app.post('/api/tag', jwt.auth, tags.post);
 app.put('/api/tag/:id', jwt.auth, tags.put);
 app.delete('/api/tag/:id', jwt.auth, tags.delete);
 
+app.get('/api/tagUsed', jwt.auth, tags.getAllUsed);
+
 app.listen(8000, function () {
   console.log('Ready');
 });
