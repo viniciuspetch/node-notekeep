@@ -9,7 +9,6 @@ exports.getAll = function (req, res, next) {
   }
 
   let db = new sqlite3.Database('note.db');
-  //let query = 'SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags LEFT JOIN tags WHERE notes.user_id = ? AND notes.id = notes_tags.notes_id AND notes_tags.tags_id = tags.id ORDER BY notes.id, tags.id';
   let query = 'SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = ? ORDER BY notes.id, tags.id';
   db.all(query, [res.locals.user_id], function (err, rows) {
     if (err) {
