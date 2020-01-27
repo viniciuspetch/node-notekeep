@@ -1,2 +1,3 @@
-# node-notekeeper
-Simple notekeeper website/API made with HTML, Node.js and SQLite
+# Notekeeper
+
+A notekeeping API made with Node.js and PostgreSQL, integrated with a website made with HTML, CSS, jQuery and Bootstrap.
