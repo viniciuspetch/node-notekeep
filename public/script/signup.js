@@ -50,17 +50,21 @@ function signup() {
   let username = $('#username').val();
   let password = $('#password').val();
 
-  if (true || validateLogin(username, password)) {
-    $.post(url, {
-      username,
-      password
-    }, (data) => {
-      console.log('result: ' + data.result);
-      if (data.reason) console.log('reason: ' + data.reason);
-      if (data.result == true) {
-        localStorage.setItem('token', data.token);
-        window.location.href = '../';
-      }
+  if (validateLogin(username, password)) {
+    console.log('Status: User information validated');
+
+    $.ajax({
+      url: "/api/signup",
+      method: "POST",
+      data: {
+        username,
+        password,
+      },
+    }).done((data, textStatus, xhr) => {
+      console.log('(' + xhr.status + ') ' + textStatus + '/' + xhr.statusText + ': ' + data);
+      window.location.href = '../';
+    }).fail((xhr, textStatus, err) => {
+      console.log('(' + xhr.status + ') ' + textStatus + '/' + err + ': ' + xhr.responseText);
     });
   }
 }
