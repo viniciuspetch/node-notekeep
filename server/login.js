@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const jwt = require('./jwt');
+const {Client} = require('pg');
 
 function isAlphaNumeric(str) {
   for (let i = 0; i < str.length; i++) {
@@ -35,20 +36,28 @@ exports.login = function (req, res) {
     return;
   }
 
-  db.get('SELECT pswd FROM user_acc WHERE usrn = ?', [username], function (err, row) {
+  const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'notekeeper',
+    password: 'postgres',
+    port: 5432,
+  });
+  client.connect();
+  client.query('SELECT pswd FROM user_acc WHERE usrn = $1', [username], function (err, queryRes) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
       return;
     }
-    if (!row) {
+    if (!queryRes.rows[0]) {
       console.log('Client error: No username found');
       res.sendStatus(401);
       return;
     }
 
     // Check password
-    let hash = row.pswd;
+    let hash = queryRes.rows[0].pswd;
     let compareRes = bcrypt.compareSync(password, hash);
     if (!compareRes) {
       console.log('Client error: Wrong password');
@@ -74,9 +83,6 @@ exports.signup = function (req, res) {
   let password = req.body.password;
   let hash = bcrypt.hashSync(password, 5);
   let datetime = Date.now();
-
-  console.log(username);
-  console.log(datetime);
 
   // Check empty username
   if (!username) {
@@ -116,15 +122,29 @@ exports.signup = function (req, res) {
     return;
   }
 
-  db.get('SELECT usrn FROM user_acc WHERE usrn = ?', [username], function (err, row) {
+  const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'notekeeper',
+    password: 'postgres',
+    port: 5432,
+  })
+  client.connect()
+  client.query('SELECT usrn FROM user_acc WHERE usrn = $1', [username], function (err, queryRes) {
     // Check if username is already used
-    if (row != undefined) {
+    if (queryRes.rows[0] != undefined) {
       console.log('Client error: Username already exists');
       res.sendStatus(401);
       return;
     }
-    // Otherwise, create a new account
-    db.run('INSERT INTO user_acc(usrn, pswd, creation, lastupdated) VALUES (?,?,?,?)', [username, hash, datetime, datetime], function () {
+    console.log('Server message: Username is free');
+
+    client.query('INSERT INTO user_acc(usrn, pswd) VALUES ($1, $2) RETURNING *', [username, hash], function (err, queryRes) {
+      if (err) {
+        console.log('Unknown error');
+        console.log(err);
+      }  
+      console.log('Server message: Username created');
       res.sendStatus(200);
       return;
     });
