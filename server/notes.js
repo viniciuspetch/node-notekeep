@@ -74,8 +74,15 @@ exports.getSingle = function (req, res, next) {
     return next();
   }
 
-  let db = new sqlite3.Database('note.db');
-  db.all('SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags LEFT JOIN tags WHERE notes.user_id = ? AND notes.id = notes_tags.notes_id AND notes_tags.tags_id = tags.id AND notes.id = ? ORDER BY notes.id, tags.id', [res.locals.user_id, req.params.id], function (err, rows) {
+  const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'notekeeper',
+    password: 'postgres',
+    port: 5432,
+  });
+  client.connect();
+  client.query('SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags LEFT JOIN tags WHERE notes.user_id = $1 AND notes.id = notes_tags.notes_id AND notes_tags.tags_id = tags.id AND notes.id = $2 ORDER BY notes.id, tags.id', [res.locals.user_id, req.params.id], function (err, queryRes) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
@@ -83,16 +90,15 @@ exports.getSingle = function (req, res, next) {
     }
 
     let newTagList = []
-    for (let i = 0; i < rows.length; i++) {
-      newTagList.push(rows[i].tag);
+    for (let i = 0; i < queryRes.rows.length; i++) {
+      newTagList.push(queryRes.rows[i].tag);
     }
     let newRow = {
-      id: rows[0].id,
-      content: rows[0].content,
-      lastupdated: rows[0].lastupdated,
+      id: queryRes.rows[0].id,
+      content: queryRes.rows[0].content,
+      lastupdated: queryRes.rows[0].lastupdated,
       tag: newTagList,
     };
-
 
     console.log(newRow);
 
