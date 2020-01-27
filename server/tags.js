@@ -17,7 +17,7 @@ exports.getAllUsed = function (req, res, next) {
     port: 5432,
   });
   client.connect();
-  client.query('SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags WHERE tags.user_id = $1 AND notes_tags.tags_id = tags.id', [res.locals.user_id], function (err, queryRes) {
+  client.query('SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE tags.user_id = $1', [res.locals.user_id], function (err, queryRes) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
