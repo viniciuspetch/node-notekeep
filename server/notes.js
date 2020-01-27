@@ -299,23 +299,22 @@ exports.delete = function (req, res, next) {
     return next();
   }
 
-  let db = new sqlite3.Database('note.db');
-  db.run('DELETE FROM notes WHERE id = ? AND user_id = ?', [req.params.id, res.locals.user_id], function (err) {
+  const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'notekeeper',
+    password: 'postgres',
+    port: 5432,
+  });
+  client.connect();
+  client.query('DELETE FROM notes WHERE id = $1 AND user_id = $2', [req.params.id, res.locals.user_id], function (err) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
       return;
     }
 
-    // Delete all notes-tags relationship entries for the edited note
-    db.run('DELETE FROM notes_tags WHERE notes_id = ?', [req.params.id], function (err) {
-      if (err) {
-        console.log(err);
-        res.sendStatus(500);
-        return;
-      }
-      res.sendStatus(200);
-      return next();
-    });
+    res.sendStatus(200);
+    return next();
   });
 };
