@@ -82,7 +82,7 @@ exports.getSingle = function (req, res, next) {
     port: 5432,
   });
   client.connect();
-  client.query('SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags LEFT JOIN tags WHERE notes.user_id = $1 AND notes.id = notes_tags.notes_id AND notes_tags.tags_id = tags.id AND notes.id = $2 ORDER BY notes.id, tags.id', [res.locals.user_id, req.params.id], function (err, queryRes) {
+  client.query('SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = $1 AND notes.id = $2 ORDER BY notes.id, tags.id', [res.locals.user_id, req.params.id], function (err, queryRes) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
@@ -211,10 +211,15 @@ exports.put = function (req, res, next) {
   console.log('userId: ' + userId);
   console.log('noteId: ' + noteId);
 
-  let db = new sqlite3.Database('note.db');
-  let datetime = Date.now();
-  // Update the note
-  db.run('UPDATE notes SET content = ?, lastupdated = ? WHERE id = ? AND user_id = ?', [req.body.content, datetime, noteId, userId], function (err) {
+  const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'notekeeper',
+    password: 'postgres',
+    port: 5432,
+  });
+  client.connect();
+  client.query('UPDATE notes SET content = $1, lastupdated = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3', [req.body.content, noteId, userId], function (err, queryRes) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
@@ -230,8 +235,7 @@ exports.put = function (req, res, next) {
     console.log('Number of tags:' + tagListLength);
 
     // Delete all notes-tags relationship entries for the edited note
-    db.run('DELETE FROM notes_tags WHERE notes_id = ?', [noteId], function (err) {
-      console.log('Delete note-tag relationship');
+    client.query('DELETE FROM notes_tags WHERE notes_id = $1', [noteId], function (err, queryRes) {
       if (err) {
         console.log(err);
         res.sendStatus(500);
@@ -240,24 +244,26 @@ exports.put = function (req, res, next) {
 
       // For each received tag, get its ID
       for (let i = 0; i < tagListLength; i++) {
-        db.get('SELECT id FROM tags WHERE tag = ? AND user_id = ?', [tagList[i], userId], function (err, row) {
+        client.query('SELECT id FROM tags WHERE tag = $1 AND user_id = $2', [tagList[i], userId], function (err, queryRes) {
           console.log('Get tag');
           if (err) {
             console.log(err);
             res.sendStatus(500);
             return;
           }
+
           // If it doesn't exist, insert it and then create the relationship
-          if (!row) {
-            db.run('INSERT into tags(user_id, tag) VALUES (?, ?)', [userId, tagList[i]], function (err) {
+          if (queryRes.rows.length == 0) {
+            client.query('INSERT into tags(user_id, tag) VALUES ($1, $2) RETURNING id', [userId, tagList[i]], function (err, queryRes) {
               if (err) {
                 console.log(err);
                 res.sendStatus(500);
                 return;
               }
 
-              let tagId = this.lastID;
-              db.run('INSERT into notes_tags(notes_id, tags_id) VALUES (?, ?)', [noteId, tagId], function (err) {
+              let tagId = queryRes.rows[0].id;
+
+              client.query('INSERT into notes_tags(notes_id, tags_id) VALUES ($1, $2)', [noteId, tagId], function (err, queryRes) {
                 if (err) {
                   console.log(err);
                   res.sendStatus(500);
@@ -268,8 +274,9 @@ exports.put = function (req, res, next) {
           }
           // Otherwise, just add the relationship
           else {
-            let tagId = row.id;
-            db.run('INSERT into notes_tags(notes_id, tags_id) VALUES (?, ?)', [noteId, tagId], function (err) {
+            let tagId = queryRes.rows[0].id;
+
+            client.query('INSERT into notes_tags(notes_id, tags_id) VALUES ($1, $2)', [noteId, tagId], function (err, queryRes) {
               if (err) {
                 console.log(err);
                 res.sendStatus(500);
