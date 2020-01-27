@@ -1,5 +1,8 @@
 const path = require('path');
 const sqlite3 = require('sqlite3');
+const {
+  Client
+} = require('pg');
 
 exports.getAll = function (req, res, next) {
   console.log('Middleware: notes.getAll');
@@ -8,9 +11,15 @@ exports.getAll = function (req, res, next) {
     return next();
   }
 
-  let db = new sqlite3.Database('note.db');
-  let query = 'SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = ? ORDER BY notes.id, tags.id';
-  db.all(query, [res.locals.user_id], function (err, rows) {
+  const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'notekeeper',
+    password: 'postgres',
+    port: 5432,
+  });
+  client.connect();
+  client.query('SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = $1 ORDER BY notes.id, tags.id', [res.locals.user_id], function (err, queryRes) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
@@ -21,30 +30,30 @@ exports.getAll = function (req, res, next) {
     let newRow = null;
     let newTagList = [];
     let newRowList = [];
-    if (rows.length > 0) {
+    if (queryRes.rows.length > 0) {
       newRow = {
-        id: rows[0].id,
-        content: rows[0].content,
-        lastupdated: rows[0].lastupdated,
+        id: queryRes.rows[0].id,
+        content: queryRes.rows[0].content,
+        lastupdated: queryRes.rows[0].lastupdated,
       };
-      if (rows[0].tag != null) {
-        newTagList.push(rows[0].tag);
+      if (queryRes.rows[0].tag != null) {
+        newTagList.push(queryRes.rows[0].tag);
       }
-      currId = rows[0].id;
-      for (let i = 1; i < rows.length; i++) {
-        if (currId != rows[i].id) {
+      currId = queryRes.rows[0].id;
+      for (let i = 1; i < queryRes.rows.length; i++) {
+        if (currId != queryRes.rows[i].id) {
           newRow.tag = newTagList;
           newRowList.push(newRow);
           newTagList = [];
           newRow = {
-            id: rows[i].id,
-            content: rows[i].content,
-            lastupdated: rows[i].lastupdated,
+            id: queryRes.rows[i].id,
+            content: queryRes.rows[i].content,
+            lastupdated: queryRes.rows[i].lastupdated,
           };
-          currId = rows[i].id;
+          currId = queryRes.rows[i].id;
         }
-        if (rows[i].tag != 'null') {
-          newTagList.push(rows[i].tag);
+        if (queryRes.rows[i].tag != 'null') {
+          newTagList.push(queryRes.rows[i].tag);
         }
       }
       newRow.tag = newTagList;
@@ -112,9 +121,16 @@ exports.post = function (req, res, next) {
 
   let userId = res.locals.user_id;
   let datetime = Date.now();
-  let db = new sqlite3.Database('note.db');
 
-  db.run('INSERT INTO notes(user_id, content, creation, lastupdated) VALUES (?,?,?,?)', [userId, content, datetime, datetime], function (err) {
+  const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'notekeeper',
+    password: 'postgres',
+    port: 5432,
+  });
+  client.connect();
+  client.query('INSERT INTO notes(user_id, content) VALUES ($1, $2) RETURNING id', [userId, content], function (err, queryRes) {
     if (err) {
       console.log(err);
       res.sendStatus(500);
@@ -126,26 +142,26 @@ exports.post = function (req, res, next) {
       tagList = [tagList];
     }
     let tagListLength = tagList.length;
-    let noteId = this.lastID;
+    let noteId = queryRes.rows[0].id;
 
     for (let i = 0; i < tagListLength; i++) {
-      db.get('SELECT id FROM tags WHERE tag = ? AND user_id = ?', [tagList[i], userId], function (err, row) {
+      client.query('SELECT id FROM tags WHERE tag = $1 AND user_id = $2', [tagList[i], userId], function (err, queryRes) {
         if (err) {
           console.log(err);
           res.sendStatus(500);
           return;
         }
 
-        if (!row) {
-          db.run('INSERT into tags(user_id, tag) VALUES (?, ?)', [userId, tagList[i]], function (err) {
+        if (queryRes.rows.length == 0) {
+          client.query('INSERT into tags(user_id, tag) VALUES ($1, $2) RETURNING id', [userId, tagList[i]], function (err, queryRes) {
             if (err) {
               console.log(err);
               res.sendStatus(500);
               return;
             }
 
-            let tagId = this.lastID;
-            db.run('INSERT into notes_tags(notes_id, tags_id) VALUES (?, ?)', [noteId, tagId], function (err) {
+            let tagId = queryRes.rows[0].id;
+            client.query('INSERT into notes_tags(notes_id, tags_id) VALUES ($1, $2)', [noteId, tagId], function (err, queryRes) {
               if (err) {
                 console.log(err);
                 res.sendStatus(500);
@@ -154,8 +170,8 @@ exports.post = function (req, res, next) {
             });
           })
         } else {
-          let tagId = row.id;
-          db.run('INSERT into notes_tags(notes_id, tags_id) VALUES (?, ?)', [noteId, tagId], function (err) {
+          let tagId = queryRes.rows[0].id;
+          client.query('INSERT into notes_tags(notes_id, tags_id) VALUES ($1, $2)', [noteId, tagId], function (err, queryRes) {
             if (err) {
               console.log(err);
               res.sendStatus(500);

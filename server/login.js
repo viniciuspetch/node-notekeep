@@ -1,7 +1,9 @@
 const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const jwt = require('./jwt');
-const {Client} = require('pg');
+const {
+  Client
+} = require('pg');
 
 function isAlphaNumeric(str) {
   for (let i = 0; i < str.length; i++) {
@@ -143,7 +145,7 @@ exports.signup = function (req, res) {
       if (err) {
         console.log('Unknown error');
         console.log(err);
-      }  
+      }
       console.log('Server message: Username created');
       res.sendStatus(200);
       return;
