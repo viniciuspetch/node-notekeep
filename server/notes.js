@@ -1,5 +1,3 @@
-const path = require('path');
-const sqlite3 = require('sqlite3');
 const {
   Client
 } = require('pg');

@@ -1,4 +1,3 @@
-const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const jwt = require('./jwt');
 const {
@@ -19,8 +18,7 @@ function isAlphaNumeric(str) {
 
 exports.login = function (req, res) {
   console.log('Middleware: login.login');
-
-  let db = new sqlite3.Database('note.db');
+  
   let username = req.body.username;
   let password = req.body.password;
   console.log('Username: ' + username);
@@ -80,11 +78,10 @@ exports.signup = function (req, res) {
   console.log('Middleware: signup');
   console.log(req.body);
 
-  let db = new sqlite3.Database('note.db');
+  
   let username = req.body.username;
   let password = req.body.password;
   let hash = bcrypt.hashSync(password, 5);
-  let datetime = Date.now();
 
   // Check empty username
   if (!username) {
