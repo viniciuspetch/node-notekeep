@@ -1,5 +1,7 @@
 const jsonwebtoken = require('jsonwebtoken');
-const sqlite3 = require('sqlite3');
+const {
+  Client
+} = require('pg');
 
 // JWT Creation
 exports.newJWT = function (username, secret) {
@@ -53,10 +55,18 @@ exports.auth = function (req, res, next) {
     res.sendStatus(401);
     return;
   }
-  let db = new sqlite3.Database('note.db');
-  db.get('SELECT id FROM user_acc WHERE usrn = ?', [username], function (err, row) {
+  
+  const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'notekeeper',
+    password: 'postgres',
+    port: 5432,
+  });
+  client.connect();
+  client.query('SELECT id FROM user_acc WHERE usrn = $1', [username], function (err, queryRes) {
     res.locals.username = username;
-    res.locals.user_id = row.id;
+    res.locals.user_id = queryRes.rows[0].id;
     next();
   });
 }

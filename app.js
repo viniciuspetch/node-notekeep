@@ -39,6 +39,20 @@ app.delete('/api/tag/:id', jwt.auth, tags.delete);
 
 app.get('/api/tagUsed', jwt.auth, tags.getAllUsed);
 
+const {Client} = require('pg');
+const client = new Client({
+  user: 'postgres',
+  host: 'localhost',
+  database: 'notekeeper',
+  password: 'postgres',
+  port: 5432,
+})
+client.connect()
+client.query('SELECT NOW()', (err, res) => {
+  err ? console.log(err) : console.log(res.rows[0].now);  
+  client.end();
+})
+
 app.listen(8000, function () {
   console.log('Ready');
 });
