@@ -3,35 +3,45 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Notekeep</title>
+  <title>Notekeep - Create a note</title>
+
+  <link rel="shortcut icon" href="../style/favicon.ico" />
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 
-  <script type="text/javascript" src="/script/create.js"></script>
+  <script src="/script/create.js"></script>
 
+  <link rel="stylesheet" href="../style/style.css">
   <link rel="stylesheet" href="../style/create.css">
 </head>
 
-<body>
-  <div class="body">
+<body class="color-1">
+  <div class="container">
     <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
+      <ol class="breadcrumb color-3">
         <li class="breadcrumb-item"><a href="/">Home</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Create a note</li>
+        <li class="breadcrumb-item" aria-current="page"><b>Create a note</b></li>
       </ol>
     </nav>
-    <form class="login-form" action="javascript:;" onsubmit="return create()">
-      <div class="form-group">
-        <label for="content">Content</label>
-        <textarea id="content" name="content" class="form-control"></textarea>
+
+    <form action="javascript:;" onsubmit="return create()">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-9 col-lg-7">
+          <div class="form-group">
+            <label for="content">Content</label>
+            <textarea id="content" name="content" class="form-control"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="tags">Tags</label>
+            <input id="tags" type="text" name="tags" class="form-control">
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="tags">Tags</label>
-        <input id="tags" type="text" name="tags" class="form-control">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-9 col-lg-7"><button type="submit" class="btn color-2">Create</button></div>
       </div>
-      <button type="submit" class="btn btn-primary">Create</button>
     </form>
   </div>
 </body>
