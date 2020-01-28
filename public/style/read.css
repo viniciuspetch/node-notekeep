@@ -59,3 +59,7 @@
 .note-padding {
   padding-bottom: 20px;
 }
+
+#searchbar {
+  flex: 50%;
+}
