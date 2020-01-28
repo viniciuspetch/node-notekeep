@@ -3,22 +3,47 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Notekeep</title>
-  
+  <title>Notekeep - Sign up</title>
+
   <link rel="shortcut icon" href="../style/favicon.ico" />
 
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script type="text/javascript" src="/script/signup.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+  <script src="/script/signup.js"></script>
+
+  <link rel="stylesheet" href="../style/style.css">
+  <link rel="stylesheet" href="../style/signup.css">
 </head>
 
-<body>
-  <a href="/">Home</a><br>
-  <p>Sign up</p>
-  <form action="javascript:;" onsubmit="signup()">
-    <input id="username" type="text" name="username"> |
-    <input id="password" type="text" name="password"> |
-    <input type="submit" value="Send">
-  </form>
+<body class="color-1">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb color-3">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item" aria-current="page"><b>Sign up</b></li>
+      </ol>
+    </nav>
+
+    <form action="javascript:;" onsubmit="return signup()">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-9 col-lg-7">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input id="username" type="text" name="username" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input id="password" type="text" name="password" class="form-control">
+          </div>
+        </div>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-9 col-lg-7"><button type="submit" class="btn color-2">Sign up</button></div>
+      </div>
+    </form>
+  </div>
 </body>
 
 </html>
