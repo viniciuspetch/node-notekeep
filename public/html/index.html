@@ -12,37 +12,30 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 
   <script type="text/javascript" src="/script/index.js"></script>
-  
-  <link rel="stylesheet" href="../style/index.css">
+
   <link rel="stylesheet" href="../style/style.css">
+  <link rel="stylesheet" href="../style/index.css">
 </head>
 
-<body>
-  <div class="container main">
+<body class="color-1">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb color-3">
+        <li class="breadcrumb-item"><b>Home</b></li>
+      </ol>
+    </nav>
     <div class="row justify-content-center">
-      <div class="card-item col-4">
+      <div class="col title">
         <h1>Node.js Notekeeper</h1>
       </div>
-    </div>
+    </div>    
+    <div id="isLogged"></div>
     <div class="row justify-content-center">
-      <div class="col-4 card-item logged" id="isLogged"></div>
-    </div>
-    <div class="row justify-content-center">
-      <a class="button col-4" href="/create">Create</a>
-    </div>
-    <div class="row justify-content-center">
-      <a class="button col-4" href="/read">Read </a>
-    </div>
-    <div class="row justify-content-center">
-      <a class="button col-4" href="/login">Login</a>
-    </div>
-    <div class="row justify-content-center">
-      <a class="button col-4" href="/signup">Sign Up</a>
-    </div>
-    <div class="row justify-content-center">
-      <a class="button col-4" href="/signout">Sign Out</a>
+      <div><a class="btn color-2" href="/create">Create</a></div>
+      <div><a class="btn color-2" href="/read">Read </a></div>
+      <div><a class="btn color-2" href="/login">Login</a></div>
+      <div><a class="btn color-2" href="/signup">Sign Up</a></div>
+      <div><a class="btn color-2" href="/signout">Sign Out</a></div>
     </div>
   </div>
 </body>
-
-</html>
