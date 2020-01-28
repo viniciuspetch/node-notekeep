@@ -11,11 +11,13 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 
-  <script type="text/javascript" src="/script/edit.js"></script>
+  <script src="/script/edit.js"></script>
 
+  <link rel="stylesheet" href="../style/style.css">
   <link rel="stylesheet" href="../style/edit.css">
 </head>
 
+<!--
 <body>
   <div class="body">
     <nav aria-label="breadcrumb">
@@ -35,6 +37,36 @@
         <input id="tags" type="text" name="tags" class="form-control">
       </div>
       <button type="submit" class="btn btn-primary">Edit</button>
+    </form>
+  </div>
+</body>
+-->
+
+<body class="color-1">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb color-3">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item" aria-current="page"><b>Edit a note</b></li>
+      </ol>
+    </nav>
+
+    <form action="javascript:;" onsubmit="return edit()">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-9 col-lg-7">
+          <div class="form-group">
+            <label for="content">Content</label>
+            <textarea id="content" name="content" class="form-control"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="tags">Tags</label>
+            <input id="tags" type="text" name="tags" class="form-control">
+          </div>
+        </div>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-9 col-lg-7"><button type="submit" class="btn color-2">Edit</button></div>
+      </div>
     </form>
   </div>
 </body>
