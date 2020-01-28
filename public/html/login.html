@@ -3,7 +3,9 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Notekeep</title>
+  <title>Notekeep - Login</title>
+
+  <link rel="shortcut icon" href="../style/favicon.ico" />
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -11,27 +13,35 @@
 
   <script src="/script/login.js"></script>
 
+  <link rel="stylesheet" href="../style/style.css">
   <link rel="stylesheet" href="../style/login.css">
 </head>
 
-<body>
-  <div class="body">
+<body class="color-1">
+  <div class="container">
     <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
+      <ol class="breadcrumb color-3">
         <li class="breadcrumb-item"><a href="/">Home</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Login</li>
+        <li class="breadcrumb-item" aria-current="page"><b>Login</b></li>
       </ol>
     </nav>
-    <form class="login-form" action="javascript:;" onsubmit="return login()">
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input id="username" type="text" name="username" class="form-control">
+
+    <form action="javascript:;" onsubmit="return login()">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-9 col-lg-7">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input id="username" type="text" name="username" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input id="password" type="text" name="password" class="form-control">
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input id="password" type="text" name="password" class="form-control">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-9 col-lg-7"><button type="submit" class="btn color-2">Login</button></div>
       </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
     </form>
   </div>
 </body>

@@ -76,16 +76,20 @@ function readPost() {
         '<div class="col-4 note-item">' +
         '<div class="card-item">' +
         '<div class="note-body">' +
+        '<div class="row">' +
+        '<div class="col-12 note-padding">' +
         '<div class="note-id">' + response[i].id + '</div>' +
         '<div class="note-tags">' + tagList + '</div>' +
         '<div class="note-content">' + response[i].content + '</div>' +
         '<div>' + currDate + '</div>' +
+        '</div>' +        
+        '<div class="col-6">' +
+        '<a class="note-btn btn color-2" href="/edit/' + response[i].id + '">Edit</a>' +
         '</div>' +
-        '<div class="card-button-outside">' +
-        '<a class="card-button-left" href="/edit/' + response[i].id + '">Edit</a>' +
+        '<div class="col-6">' +
+        '<a class="note-btn btn color-2" id="noteItem_' + response[i].id + '" href="#">Delete</a>' +
         '</div>' +
-        '<div class="card-button-outside">' +
-        '<a class="card-button-right" id="noteItem_' + response[i].id + '" href="#">Delete</a>' +
+        '</div>' +
         '</div>' +
         '</div>' +
         '</div>');
