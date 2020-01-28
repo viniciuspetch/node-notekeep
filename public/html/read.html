@@ -7,16 +7,46 @@
 
   <link rel="shortcut icon" href="../style/favicon.ico" />
 
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
 
   <script src="/script/read.js"></script>
 
-  <link rel="stylesheet" href="../style/read.css">
   <link rel="stylesheet" href="../style/style.css">
+  <link rel="stylesheet" href="../style/read.css">
 </head>
 
+<body class="color-1">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb color-3">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item" aria-current="page"><b>List of notes</b></li>
+      </ol>
+    </nav>
+    <div class="row">
+      <div class="col-12">
+        <input type="text" id="searchbar" onkeyup="return search()" class="form-control" placeholder="Search here...">
+        <select id="tag-list">
+          <option value="">Selecione uma opção</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="update-btn col-12">
+        <div class="btn color-2"><a id="updateLink" href="#">Update</a><br></div>
+      </div>
+    </div>
+
+    <div class="row justify-content-center" id="noteList">
+    </div>
+
+
+  </div>
+</body>
+
+<!--
 <body>
   <div class="body">
     <input type="text" id="searchbar" onkeyup="return search()" class="form-control" placeholder="Search here...">
@@ -32,5 +62,6 @@
     </div>
   </div>
 </body>
+-->
 
 </html>
