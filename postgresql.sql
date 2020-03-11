@@ -14,7 +14,7 @@ CREATE TABLE notes (
     creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     lastupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES user_acc (id)
+    FOREIGN KEY (user_id) REFERENCES user_acc (id) ON DELETE CASCADE
 );
 
 CREATE TABLE tags (
@@ -24,7 +24,7 @@ CREATE TABLE tags (
     creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     lastupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES user_acc (id)
+    FOREIGN KEY (user_id) REFERENCES user_acc (id) ON DELETE CASCADE
 );
 
 CREATE TABLE notes_tags (
@@ -34,6 +34,6 @@ CREATE TABLE notes_tags (
     creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     lastupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    FOREIGN KEY (notes_id) REFERENCES notes (id),
-    FOREIGN KEY (tags_id) REFERENCES tags (id)
+    FOREIGN KEY (notes_id) REFERENCES notes (id) ON DELETE CASCADE,
+    FOREIGN KEY (tags_id) REFERENCES tags (id) ON DELETE CASCADE
 );
