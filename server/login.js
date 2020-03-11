@@ -36,12 +36,25 @@ exports.login = function (req, res) {
     return;
   }
 
-  const client = new Client({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'notekeeper',
-    password: 'postgres',
-    port: 5432,
+  let client = null;
+  if (process.env.DATABASE_URL) {
+    client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: true
+    });
+  } else {
+    client = new Client({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT
+    });
+  }
+  client.connect(err => {
+    console.log(err);
+    res.sendStatus(500);
+    return;
   });
   client.connect();
   client.query('SELECT pswd FROM user_acc WHERE usrn = $1', [username], function (err, queryRes) {
@@ -121,14 +134,26 @@ exports.signup = function (req, res) {
     return;
   }
 
-  const client = new Client({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'notekeeper',
-    password: 'postgres',
-    port: 5432,
-  })
-  client.connect()
+  let client = null;
+  if (process.env.DATABASE_URL) {
+    client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: true
+    });
+  } else {
+    client = new Client({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT
+    });
+  }
+  client.connect(err => {
+    console.log(err);
+    res.sendStatus(500);
+    return;
+  });
   client.query('SELECT usrn FROM user_acc WHERE usrn = $1', [username], function (err, queryRes) {
     // Check if username is already used
     if (queryRes.rows[0] != undefined) {
