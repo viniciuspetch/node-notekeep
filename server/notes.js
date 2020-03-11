@@ -20,13 +20,14 @@ exports.getAll = function(req, res, next) {
     res.sendStatus(500);
     return next();
   }
+  let client = null;
   if (process.env.DATABASE_URL) {
-    const client = new Client({
+    client = new Client({
       connectionString: process.env.DATABASE_URL,
       ssl: true
     });
   } else {
-    const client = new Client({
+    client = new Client({
       user: process.env.DB_USER,
       host: process.env.DB_HOST,
       database: process.env.DB_DATABASE,
@@ -97,13 +98,14 @@ exports.getSingle = function(req, res, next) {
     return next();
   }
 
+  let client = null;
   if (process.env.DATABASE_URL) {
-    const client = new Client({
+    client = new Client({
       connectionString: process.env.DATABASE_URL,
       ssl: true
     });
   } else {
-    const client = new Client({
+    client = new Client({
       user: process.env.DB_USER,
       host: process.env.DB_HOST,
       database: process.env.DB_DATABASE,
@@ -162,13 +164,14 @@ exports.post = function(req, res, next) {
   let userId = res.locals.user_id;
   let datetime = Date.now();
 
+  let client = null;
   if (process.env.DATABASE_URL) {
-    const client = new Client({
+    client = new Client({
       connectionString: process.env.DATABASE_URL,
       ssl: true
     });
   } else {
-    const client = new Client({
+    client = new Client({
       user: process.env.DB_USER,
       host: process.env.DB_HOST,
       database: process.env.DB_DATABASE,
@@ -272,13 +275,14 @@ exports.put = function(req, res, next) {
   console.log("userId: " + userId);
   console.log("noteId: " + noteId);
 
+  let client = null;
   if (process.env.DATABASE_URL) {
-    const client = new Client({
+    client = new Client({
       connectionString: process.env.DATABASE_URL,
       ssl: true
     });
   } else {
-    const client = new Client({
+    client = new Client({
       user: process.env.DB_USER,
       host: process.env.DB_HOST,
       database: process.env.DB_DATABASE,
@@ -391,13 +395,14 @@ exports.delete = function(req, res, next) {
     return next();
   }
 
+  let client = null;
   if (process.env.DATABASE_URL) {
-    const client = new Client({
+    client = new Client({
       connectionString: process.env.DATABASE_URL,
       ssl: true
     });
   } else {
-    const client = new Client({
+    client = new Client({
       user: process.env.DB_USER,
       host: process.env.DB_HOST,
       database: process.env.DB_DATABASE,
