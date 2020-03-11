@@ -25,6 +25,18 @@ exports.login = function(req, res) {
   console.log("Username: " + username);
   console.log("Password: " + password);
 
+  // Check empty fields
+  if (!username) {
+    console.log("Client error: No username received");
+    res.sendStatus(401);
+    return;
+  }
+  if (!password) {
+    console.log("Client error: No password received");
+    res.sendStatus(401);
+    return;
+  }
+
   let client = null;
   if (process.env.DATABASE_URL) {
     client = new Client({
@@ -49,35 +61,36 @@ exports.login = function(req, res) {
         function(err, queryRes) {
           if (err) {
             console.log(err);
-            res.status(500);
+            res.sendStatus(500);
             return;
-          } else if (!queryRes.rows[0]) {
+          }
+          if (!queryRes.rows[0]) {
             console.log("Client error: No username found");
-            res.status(401);
+            res.sendStatus(401);
+            return;
+          }
+
+          // Check password
+          let hash = queryRes.rows[0].pswd;
+          let compareRes = bcrypt.compareSync(password, hash);
+          if (!compareRes) {
+            console.log("Client error: Wrong password");
+            res.sendStatus(401);
             return;
           } else {
-            // Check password
-            let hash = queryRes.rows[0].pswd;
-            let compareRes = bcrypt.compareSync(password, hash);
-            if (!compareRes) {
-              console.log("Client error: Wrong password");
-              res.status(401);
-              return;
-            } else {
-              // Return token
-              res.status(200);
-              res.json({
-                token: jwt.newJWT(username, "nodejs")
-              });
-            }
+            // Return token
+            res.status(200);
+            res.json({
+              token: jwt.newJWT(username, "nodejs")
+            });
+            return;
           }
-          res.send();
         }
       );
     })
     .catch(err => {
-      res.status(512);
-      res.send();
+      console.log(err);
+      res.sendStatus(512);
       return;
     });
 };
@@ -175,6 +188,8 @@ exports.signup = function(req, res) {
       );
     })
     .catch(err => {
+      console.log(err);
       res.sendStatus(512);
+      return;
     });
 };
