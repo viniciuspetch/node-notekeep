@@ -67,6 +67,6 @@ client.query("SELECT NOW()", (err, res) => {
   client.end();
 });
 
-app.listen(8000, function() {
+app.listen(process.env.PORT || 8000, function() {
   console.log("Ready");
 });
