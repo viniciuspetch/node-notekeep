@@ -54,8 +54,8 @@ exports.login = function(req, res) {
   }
   client.connect(err => {
     console.log(err);
-    res.sendStatus(500);
-    next()
+    res.sendStatus(507);
+    return;
   });
   client.query(
     "SELECT pswd FROM user_acc WHERE usrn = $1",
