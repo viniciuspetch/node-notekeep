@@ -22,27 +22,25 @@ exports.getAll = function(req, res, next) {
   }
 
   let client = null;
-  try {
-    if (process.env.DATABASE_URL) {
-      client = new Client({
-        connectionString: process.env.DATABASE_URL,
-        ssl: true
-      });
-    } else {
-      client = new Client({
-        user: process.env.DB_USER,
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        password: process.env.DB_PASSWORD,
-        port: process.env.DB_PORT
-      });
-    }
-    client.connect();
-  } catch (err) {
+  if (process.env.DATABASE_URL) {
+    client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: true
+    });
+  } else {
+    client = new Client({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT
+    });
+  }
+  client.connect(err => {
     console.log(err);
     res.sendStatus(500);
     return;
-  }
+  });
 
   client.query(
     "SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = $1 ORDER BY notes.id, tags.id",
@@ -106,27 +104,25 @@ exports.getSingle = function(req, res, next) {
   }
 
   let client = null;
-  try {
-    if (process.env.DATABASE_URL) {
-      client = new Client({
-        connectionString: process.env.DATABASE_URL,
-        ssl: true
-      });
-    } else {
-      client = new Client({
-        user: process.env.DB_USER,
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        password: process.env.DB_PASSWORD,
-        port: process.env.DB_PORT
-      });
-    }
-    client.connect();
-  } catch (err) {
+  if (process.env.DATABASE_URL) {
+    client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: true
+    });
+  } else {
+    client = new Client({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT
+    });
+  }
+  client.connect(err => {
     console.log(err);
     res.sendStatus(500);
     return;
-  }
+  });
 
   client.query(
     "SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = $1 AND notes.id = $2 ORDER BY notes.id, tags.id",
@@ -179,27 +175,25 @@ exports.post = function(req, res, next) {
   let datetime = Date.now();
 
   let client = null;
-  try {
-    if (process.env.DATABASE_URL) {
-      client = new Client({
-        connectionString: process.env.DATABASE_URL,
-        ssl: true
-      });
-    } else {
-      client = new Client({
-        user: process.env.DB_USER,
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        password: process.env.DB_PASSWORD,
-        port: process.env.DB_PORT
-      });
-    }
-    client.connect();
-  } catch (err) {
+  if (process.env.DATABASE_URL) {
+    client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: true
+    });
+  } else {
+    client = new Client({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT
+    });
+  }
+  client.connect(err => {
     console.log(err);
     res.sendStatus(500);
     return;
-  }
+  });
 
   client.query(
     "INSERT INTO notes(user_id, content) VALUES ($1, $2) RETURNING id",
@@ -297,27 +291,25 @@ exports.put = function(req, res, next) {
   console.log("noteId: " + noteId);
 
   let client = null;
-  try {
-    if (process.env.DATABASE_URL) {
-      client = new Client({
-        connectionString: process.env.DATABASE_URL,
-        ssl: true
-      });
-    } else {
-      client = new Client({
-        user: process.env.DB_USER,
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        password: process.env.DB_PASSWORD,
-        port: process.env.DB_PORT
-      });
-    }
-    client.connect();
-  } catch (err) {
+  if (process.env.DATABASE_URL) {
+    client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: true
+    });
+  } else {
+    client = new Client({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT
+    });
+  }
+  client.connect(err => {
     console.log(err);
     res.sendStatus(500);
     return;
-  }
+  });
 
   client.query(
     "UPDATE notes SET content = $1, lastupdated = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3",
@@ -424,27 +416,25 @@ exports.delete = function(req, res, next) {
   }
 
   let client = null;
-  try {
-    if (process.env.DATABASE_URL) {
-      client = new Client({
-        connectionString: process.env.DATABASE_URL,
-        ssl: true
-      });
-    } else {
-      client = new Client({
-        user: process.env.DB_USER,
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        password: process.env.DB_PASSWORD,
-        port: process.env.DB_PORT
-      });
-    }
-    client.connect();
-  } catch (err) {
+  if (process.env.DATABASE_URL) {
+    client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: true
+    });
+  } else {
+    client = new Client({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT
+    });
+  }
+  client.connect(err => {
     console.log(err);
     res.sendStatus(500);
     return;
-  }
+  });
 
   client.query(
     "DELETE FROM notes WHERE id = $1 AND user_id = $2",
