@@ -75,8 +75,9 @@ exports.auth = function(req, res, next) {
         "SELECT id FROM user_acc WHERE usrn = $1",
         [username],
         function(err, queryRes) {
-          if (err) {
-            next(err);
+          if (err || !queryRes) {
+            res.sendStatus(500);
+            return;
           }
           res.locals.username = username;
           res.locals.user_id = queryRes.rows[0].id;
@@ -87,5 +88,6 @@ exports.auth = function(req, res, next) {
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
+      return;
     });
 };
