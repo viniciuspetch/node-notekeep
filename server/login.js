@@ -52,42 +52,44 @@ exports.login = function(req, res) {
       port: process.env.DB_PORT
     });
   }
-  client.connect(err => {
-    console.log(err);
-    res.sendStatus(507);
-    return;
-  });
-  client.query(
-    "SELECT pswd FROM user_acc WHERE usrn = $1",
-    [username],
-    function(err, queryRes) {
-      if (err) {
-        console.log(err);
-        res.sendStatus(500);
-        return;
-      } else if (!queryRes.rows[0]) {
-        console.log("Client error: No username found");
-        res.sendStatus(401);
-        return;
-      } else {
-        // Check password
-        let hash = queryRes.rows[0].pswd;
-        let compareRes = bcrypt.compareSync(password, hash);
-        if (!compareRes) {
-          console.log("Client error: Wrong password");
-          res.sendStatus(401);
-          return;
-        } else {
-          // Return token
-          res.status(200);
-          res.json({
-            token: jwt.newJWT(username, "nodejs")
-          });
-          return;
+  client
+    .connect()
+    .then(() => {
+      client.query(
+        "SELECT pswd FROM user_acc WHERE usrn = $1",
+        [username],
+        function(err, queryRes) {
+          if (err) {
+            console.log(err);
+            res.sendStatus(500);
+            return;
+          } else if (!queryRes.rows[0]) {
+            console.log("Client error: No username found");
+            res.sendStatus(401);
+            return;
+          } else {
+            // Check password
+            let hash = queryRes.rows[0].pswd;
+            let compareRes = bcrypt.compareSync(password, hash);
+            if (!compareRes) {
+              console.log("Client error: Wrong password");
+              res.sendStatus(401);
+              return;
+            } else {
+              // Return token
+              res.status(200);
+              res.json({
+                token: jwt.newJWT(username, "nodejs")
+              });
+              return;
+            }
+          }
         }
-      }
-    }
-  );
+      );
+    })
+    .catch(err => {
+      res.sendStatus(512);
+    });
 };
 
 exports.signup = function(req, res) {
@@ -151,36 +153,38 @@ exports.signup = function(req, res) {
       port: process.env.DB_PORT
     });
   }
-  client.connect(err => {
-    console.log(err);
-    res.sendStatus(500);
-    return;
-  });
-  client.query(
-    "SELECT usrn FROM user_acc WHERE usrn = $1",
-    [username],
-    function(err, queryRes) {
-      // Check if username is already used
-      if (queryRes.rows[0] != undefined) {
-        console.log("Client error: Username already exists");
-        res.sendStatus(401);
-        return;
-      }
-      console.log("Server message: Username is free");
-
+  client
+    .connect()
+    .then(() => {
       client.query(
-        "INSERT INTO user_acc(usrn, pswd) VALUES ($1, $2) RETURNING *",
-        [username, hash],
+        "SELECT usrn FROM user_acc WHERE usrn = $1",
+        [username],
         function(err, queryRes) {
-          if (err) {
-            console.log("Unknown error");
-            console.log(err);
+          // Check if username is already used
+          if (queryRes.rows[0] != undefined) {
+            console.log("Client error: Username already exists");
+            res.sendStatus(401);
+            return;
           }
-          console.log("Server message: Username created");
-          res.sendStatus(200);
-          return;
+          console.log("Server message: Username is free");
+
+          client.query(
+            "INSERT INTO user_acc(usrn, pswd) VALUES ($1, $2) RETURNING *",
+            [username, hash],
+            function(err, queryRes) {
+              if (err) {
+                console.log("Unknown error");
+                console.log(err);
+              }
+              console.log("Server message: Username created");
+              res.sendStatus(200);
+              return;
+            }
+          );
         }
       );
-    }
-  );
+    })
+    .catch(err => {
+      res.sendStatus(512);
+    });
 };
