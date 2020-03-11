@@ -43,14 +43,15 @@ app.get("/api/tagUsed", jwt.auth, tags.getAllUsed);
 
 // Testing database connection
 const { Client } = require("pg");
-
 let client = null;
 if (process.env.DATABASE_URL) {
+  console.log("Heroku");
   client = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: true
   });
 } else {
+  console.log("Local");
   client = new Client({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
@@ -59,12 +60,11 @@ if (process.env.DATABASE_URL) {
     port: process.env.DB_PORT
   });
 }
-client.connect(err => {
-  console.log(err);
-});
-client.query("SELECT NOW()", (err, res) => {
-  err ? console.log(err) : console.log(res.rows[0].now);
-  client.end();
+client.connect().then(() => {
+  client.query("SELECT NOW()", (err, res) => {
+    err ? console.log(err) : console.log("The time now is " + res.rows[0].now);
+    client.end();
+  });
 });
 
 app.listen(process.env.PORT || 8000, function() {
