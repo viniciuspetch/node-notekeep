@@ -76,7 +76,9 @@ exports.auth = function(req, res, next) {
         [username],
         function(err, queryRes) {
           if (err || !queryRes) {
+            console.log(err);
             res.sendStatus(500);
+            client.end();
             return;
           }
           res.locals.username = username;
@@ -88,6 +90,7 @@ exports.auth = function(req, res, next) {
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
+      client.end();
       return;
     });
 };

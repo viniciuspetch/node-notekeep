@@ -62,11 +62,13 @@ exports.login = function(req, res) {
           if (err) {
             console.log(err);
             res.sendStatus(500);
+            client.end();
             return;
           }
           if (!queryRes.rows[0]) {
             console.log("Client error: No username found");
             res.sendStatus(401);
+            client.end();
             return;
           }
 
@@ -76,6 +78,7 @@ exports.login = function(req, res) {
           if (!compareRes) {
             console.log("Client error: Wrong password");
             res.sendStatus(401);
+            client.end();
             return;
           } else {
             // Return token
@@ -83,6 +86,7 @@ exports.login = function(req, res) {
             res.json({
               token: jwt.newJWT(username, "nodejs")
             });
+            client.end();
             return;
           }
         }
@@ -91,6 +95,7 @@ exports.login = function(req, res) {
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
+      client.end();
       return;
     });
 };
@@ -167,6 +172,7 @@ exports.signup = function(req, res) {
           if (queryRes.rows[0] != undefined) {
             console.log("Client error: Username already exists");
             res.sendStatus(401);
+            client.end();
             return;
           }
           console.log("Server message: Username is free");
@@ -181,6 +187,7 @@ exports.signup = function(req, res) {
               }
               console.log("Server message: Username created");
               res.sendStatus(200);
+              client.end();
               return;
             }
           );
@@ -190,6 +197,7 @@ exports.signup = function(req, res) {
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
+      client.end();
       return;
     });
 };
