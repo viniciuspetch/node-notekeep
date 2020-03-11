@@ -46,6 +46,7 @@ exports.getAll = function(req, res, next) {
           if (err) {
             console.log(err);
             res.sendStatus(500);
+            client.end();
             return;
           }
 
@@ -88,6 +89,7 @@ exports.getAll = function(req, res, next) {
           console.log(newRowList);
           res.status(200);
           res.send(newRowList);
+          client.end();
           return next();
         }
       );
@@ -95,6 +97,7 @@ exports.getAll = function(req, res, next) {
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
+      client.end();
       return;
     });
 };
@@ -131,6 +134,7 @@ exports.getSingle = function(req, res, next) {
           if (err) {
             console.log(err);
             res.sendStatus(500);
+            client.end();
             return;
           }
 
@@ -149,6 +153,7 @@ exports.getSingle = function(req, res, next) {
 
           res.status(200);
           res.send(newRow);
+          client.end();
           return next();
         }
       );
@@ -156,6 +161,7 @@ exports.getSingle = function(req, res, next) {
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
+      client.end();
       return;
     });
 };
@@ -205,6 +211,7 @@ exports.post = function(req, res, next) {
           if (err) {
             console.log(err);
             res.sendStatus(500);
+            client.end();
             return;
           }
 
@@ -223,6 +230,7 @@ exports.post = function(req, res, next) {
                 if (err) {
                   console.log(err);
                   res.sendStatus(500);
+                  client.end();
                   return;
                 }
 
@@ -234,6 +242,7 @@ exports.post = function(req, res, next) {
                       if (err) {
                         console.log(err);
                         res.sendStatus(500);
+                        client.end();
                         return;
                       }
 
@@ -245,6 +254,7 @@ exports.post = function(req, res, next) {
                           if (err) {
                             console.log(err);
                             res.sendStatus(500);
+                            client.end();
                             return;
                           }
                         }
@@ -260,6 +270,7 @@ exports.post = function(req, res, next) {
                       if (err) {
                         console.log(err);
                         res.sendStatus(500);
+                        client.end();
                         return;
                       }
                     }
@@ -269,6 +280,7 @@ exports.post = function(req, res, next) {
             );
           }
           res.sendStatus(200);
+          client.end();
           return;
         }
       );
@@ -276,6 +288,7 @@ exports.post = function(req, res, next) {
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
+      client.end();
       return;
     });
 };
@@ -324,6 +337,7 @@ exports.put = function(req, res, next) {
           if (err) {
             console.log(err);
             res.sendStatus(500);
+            client.end();
             return;
           }
 
@@ -343,6 +357,7 @@ exports.put = function(req, res, next) {
               if (err) {
                 console.log(err);
                 res.sendStatus(500);
+                client.end();
                 return;
               }
 
@@ -356,6 +371,7 @@ exports.put = function(req, res, next) {
                     if (err) {
                       console.log(err);
                       res.sendStatus(500);
+                      client.end();
                       return;
                     }
 
@@ -368,6 +384,7 @@ exports.put = function(req, res, next) {
                           if (err) {
                             console.log(err);
                             res.sendStatus(500);
+                            client.end();
                             return;
                           }
 
@@ -380,6 +397,7 @@ exports.put = function(req, res, next) {
                               if (err) {
                                 console.log(err);
                                 res.sendStatus(500);
+                                client.end();
                                 return;
                               }
                             }
@@ -398,6 +416,7 @@ exports.put = function(req, res, next) {
                           if (err) {
                             console.log(err);
                             res.sendStatus(500);
+                            client.end();
                             return;
                           }
                         }
@@ -409,6 +428,7 @@ exports.put = function(req, res, next) {
             }
           );
           res.sendStatus(200);
+          client.end();
           return next();
         }
       );
@@ -416,6 +436,7 @@ exports.put = function(req, res, next) {
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
+      client.end();
       return;
     });
 };
@@ -452,10 +473,12 @@ exports.delete = function(req, res, next) {
           if (err) {
             console.log(err);
             res.sendStatus(500);
+            client.end();
             return;
           }
 
           res.sendStatus(200);
+          client.end();
           return next();
         }
       );
@@ -463,6 +486,7 @@ exports.delete = function(req, res, next) {
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
+      client.end();
       return;
     });
 };
