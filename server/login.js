@@ -25,18 +25,6 @@ exports.login = function(req, res) {
   console.log("Username: " + username);
   console.log("Password: " + password);
 
-  // Check empty fields
-  if (!username) {
-    console.log("Client error: No username received");
-    res.sendStatus(401);
-    return;
-  }
-  if (!password) {
-    console.log("Client error: No password received");
-    res.sendStatus(401);
-    return;
-  }
-
   let client = null;
   if (process.env.DATABASE_URL) {
     client = new Client({
@@ -61,11 +49,11 @@ exports.login = function(req, res) {
         function(err, queryRes) {
           if (err) {
             console.log(err);
-            res.sendStatus(500);
+            res.status(500);
             return;
           } else if (!queryRes.rows[0]) {
             console.log("Client error: No username found");
-            res.sendStatus(401);
+            res.status(401);
             return;
           } else {
             // Check password
@@ -73,7 +61,7 @@ exports.login = function(req, res) {
             let compareRes = bcrypt.compareSync(password, hash);
             if (!compareRes) {
               console.log("Client error: Wrong password");
-              res.sendStatus(401);
+              res.status(401);
               return;
             } else {
               // Return token
@@ -81,14 +69,16 @@ exports.login = function(req, res) {
               res.json({
                 token: jwt.newJWT(username, "nodejs")
               });
-              return;
             }
           }
+          res.send();
         }
       );
     })
     .catch(err => {
-      res.sendStatus(512);
+      res.status(512);
+      res.send();
+      return;
     });
 };
 
