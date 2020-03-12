@@ -81,7 +81,6 @@ exports.auth = function(req, res, next) {
     .catch(e => {
       console.log(e);
       res.sendStatus(512);
-      client.end();
       return;
     })
     .finally(() => client.end());

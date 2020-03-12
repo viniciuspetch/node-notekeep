@@ -38,7 +38,6 @@ exports.getAllUsed = function(req, res, next) {
     .catch(e => {
       console.log(e);
       res.sendStatus(500);
-      client.end();
       return;
     })
     .finally(() => client.end());

@@ -154,9 +154,9 @@ exports.getSingle = function(req, res, next) {
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
-      client.end();
       return;
-    });
+    })
+    .finally(() => client.end());
 };
 
 exports.post = function(req, res, next) {
@@ -281,17 +281,13 @@ exports.post = function(req, res, next) {
       console.log(queryString);
       return client.query(queryString.slice(0, -2), queryArray);
     })
+    .then(() => res.sendStatus(200))
     .catch(e => {
-      client.end();
       console.log(e);
       res.sendStatus(500);
       return;
     })
-    .finally(() => {
-      client.end();
-      res.sendStatus(200);
-      return;
-    });
+    .finally(() => client.end());
 };
 
 exports.put = function(req, res, next) {
