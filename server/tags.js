@@ -22,21 +22,26 @@ exports.getAllUsed = function(req, res, next) {
       port: process.env.DB_PORT
     });
   }
-  client.connect();
-  client.query(
-    "SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE tags.user_id = $1",
-    [res.locals.user_id],
-    function(err, queryRes) {
-      if (err) {
-        console.log(err);
-        res.sendStatus(500);
-        return;
-      }
+  client
+    .connect()
+    .then(() =>
+      client.query(
+        "SELECT tags.id, tags.tag FROM notes_tags LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE tags.user_id = $1",
+        [res.locals.user_id]
+      )
+    )
+    .then(r => {
       res.status(200);
-      res.send(queryRes.rows);
-      return next();
-    }
-  );
+      res.send(r.rows);
+      return;
+    })
+    .catch(e => {
+      console.log(e);
+      res.sendStatus(500);
+      client.end();
+      return;
+    })
+    .finally(() => client.end());
 };
 
 exports.getAll = function(req, res, next) {
