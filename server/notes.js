@@ -5,10 +5,8 @@ function getAllURL(string) {
   let listURLs = [];
   stringSplit = string.split(" ");
   for (let i in stringSplit) {
-    console.log(stringSplit[i]);
     if (stringSplit[i].search("[.]") != -1) {
       listURLs.push(stringSplit[i]);
-      console.log(listURLs);
     }
   }
   return listURLs;
@@ -85,8 +83,6 @@ exports.getAll = function(req, res, next) {
             newRow.tag = newTagList;
             newRowList.push(newRow);
           }
-
-          console.log(newRowList);
           res.status(200);
           res.send(newRowList);
           client.end();
@@ -148,9 +144,6 @@ exports.getSingle = function(req, res, next) {
             lastupdated: queryRes.rows[0].lastupdated,
             tag: newTagList
           };
-
-          console.log(newRow);
-
           res.status(200);
           res.send(newRow);
           client.end();
@@ -184,7 +177,6 @@ exports.post = function(req, res, next) {
   }
 
   let userId = res.locals.user_id;
-  let datetime = Date.now();
 
   let client = null;
   if (process.env.DATABASE_URL) {
@@ -201,96 +193,97 @@ exports.post = function(req, res, next) {
       port: process.env.DB_PORT
     });
   }
+
+  let noteId = null;
+  let tagIdList = [];
+  let tagContentList = [];
+
   client
     .connect()
-    .then(() => {
+    .then(() =>
       client.query(
         "INSERT INTO notes(user_id, content) VALUES ($1, $2) RETURNING id",
-        [userId, content],
-        function(err, queryRes) {
-          if (err) {
-            console.log(err);
-            res.sendStatus(500);
-            client.end();
-            return;
-          }
-
-          let tagList = req.body["tags[]"];
-          if (typeof tagList == "string") {
-            tagList = [tagList];
-          }
-          let tagListLength = tagList.length;
-          let noteId = queryRes.rows[0].id;
-
-          for (let i = 0; i < tagListLength; i++) {
-            client.query(
-              "SELECT id FROM tags WHERE tag = $1 AND user_id = $2",
-              [tagList[i], userId],
-              function(err, queryRes) {
-                if (err) {
-                  console.log(err);
-                  res.sendStatus(500);
-                  client.end();
-                  return;
-                }
-
-                if (queryRes.rows.length == 0) {
-                  client.query(
-                    "INSERT into tags(user_id, tag) VALUES ($1, $2) RETURNING id",
-                    [userId, tagList[i]],
-                    function(err, queryRes) {
-                      if (err) {
-                        console.log(err);
-                        res.sendStatus(500);
-                        client.end();
-                        return;
-                      }
-
-                      let tagId = queryRes.rows[0].id;
-                      client.query(
-                        "INSERT into notes_tags(notes_id, tags_id) VALUES ($1, $2)",
-                        [noteId, tagId],
-                        function(err, queryRes) {
-                          if (err) {
-                            console.log(err);
-                            res.sendStatus(500);
-                            client.end();
-                            return;
-                          }
-                        }
-                      );
-                    }
-                  );
-                } else {
-                  let tagId = queryRes.rows[0].id;
-                  client.query(
-                    "INSERT into notes_tags(notes_id, tags_id) VALUES ($1, $2)",
-                    [noteId, tagId],
-                    function(err, queryRes) {
-                      if (err) {
-                        console.log(err);
-                        res.sendStatus(500);
-                        client.end();
-                        return;
-                      }
-                    }
-                  );
-                }
-              }
-            );
-          }
-          res.sendStatus(200);
-          client.end();
-          return;
-        }
+        [userId, content]
+      )
+    )
+    .then(r => {
+      // Transform string of tags into a list
+      tagContentList = req.body["tags[]"];
+      if (typeof tagContentList == "string") tagContentList = [tagContentList];
+      // Get id of the new note
+      noteId = r.rows[0].id;
+      // Prepare query variables
+      queryArray = [...tagContentList];
+      // Create list of string markers
+      let param = queryArray.map(function(item, index) {
+        return "$" + (index + 2);
+      });
+      // Add userId to be $1
+      queryArray.unshift(userId);
+      // Run query to select all tags that already exist
+      return client.query(
+        "SELECT id, tag FROM tags WHERE user_id = $1 AND tag IN (" +
+          param.join(", ") +
+          ")",
+        queryArray
       );
     })
-    .catch(err => {
-      console.log(err);
-      res.sendStatus(512);
+    .then(r => {
+      // Get id of all tags that are in the DB
+      for (i in r.rows) {
+        tagIdList.push(r.rows[i].id);
+      }
+      // Get list of tags that are not in the DB
+      let auxList = r.rows.map((v, i) => r.rows[i].tag);
+      let remainTagList = [];
+      for (i in tagContentList) {
+        f = auxList.indexOf(tagContentList[i]);
+        if (f == -1) {
+          remainTagList.push(userId);
+          remainTagList.push(tagContentList[i]);
+        }
+      }
+      // Insert tags that are not in the DB
+      if (remainTagList.length == 0) {
+        return client.query("SELECT NULL LIMIT 0");
+      } else {
+        let queryString = "INSERT INTO tags(user_id, tag) VALUES ";
+        for (let i = 0; i < remainTagList.length; i += 2) {
+          queryString +=
+            "($" + (parseInt(i) + 1) + ", $" + (parseInt(i) + 2) + "), ";
+        }
+        queryString = queryString.slice(0, -2) + " RETURNING id";
+        // Print stuff to check
+        return client.query(queryString, remainTagList);
+      }
+    })
+    .then(r => {
+      // Get the newly added tag IDs
+      for (i in r.rows) {
+        console.log(r.rows[i].id);
+        tagIdList.push(r.rows[i].id);
+      }
+      console.log(tagIdList);
+      // Build queryArray and queryString
+      let queryArray = [];
+      let queryString = "INSERT INTO notes_tags(notes_id, tags_id) VALUES ";
+      for (i in tagIdList) {
+        queryArray.push(noteId);
+        queryArray.push(tagIdList[i]);
+      }
+      for (let i = 1; i <= queryArray.length; i += 2) {
+        queryString += "($" + parseInt(i) + ", $" + (parseInt(i) + 1) + "), ";
+      }
+      // Run query, return Promise
+      console.log(queryArray);
+      console.log(queryString);
+      return client.query(queryString.slice(0, -2), queryArray);
+    })
+    .catch(e => {
       client.end();
-      return;
-    });
+      console.log(e);
+    })
+    .finally(() => client.end());
 };
 
 exports.put = function(req, res, next) {
@@ -308,9 +301,6 @@ exports.put = function(req, res, next) {
 
   let userId = res.locals.user_id;
   let noteId = req.params.id;
-
-  console.log("userId: " + userId);
-  console.log("noteId: " + noteId);
 
   let client = null;
   if (process.env.DATABASE_URL) {
@@ -346,8 +336,6 @@ exports.put = function(req, res, next) {
             tagList = [tagList];
           }
           let tagListLength = tagList.length;
-          console.log("List of tags:" + tagList);
-          console.log("Number of tags:" + tagListLength);
 
           // Delete all notes-tags relationship entries for the edited note
           client.query(
