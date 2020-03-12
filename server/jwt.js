@@ -70,27 +70,19 @@ exports.auth = function(req, res, next) {
   }
   client
     .connect()
-    .then(() => {
-      client.query(
-        "SELECT id FROM user_acc WHERE usrn = $1",
-        [username],
-        function(err, queryRes) {
-          if (err || !queryRes) {
-            console.log(err);
-            res.sendStatus(500);
-            client.end();
-            return;
-          }
-          res.locals.username = username;
-          res.locals.user_id = queryRes.rows[0].id;
-          next();
-        }
-      );
+    .then(() =>
+      client.query("SELECT id FROM user_acc WHERE usrn = $1", [username])
+    )
+    .then(r => {
+      res.locals.username = username;
+      res.locals.user_id = r.rows[0].id;
+      next();
     })
-    .catch(err => {
-      console.log(err);
+    .catch(e => {
+      console.log(e);
       res.sendStatus(512);
       client.end();
       return;
-    });
+    })
+    .finally(() => client.end());
 };
