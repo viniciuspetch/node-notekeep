@@ -54,50 +54,34 @@ exports.login = function(req, res) {
   }
   client
     .connect()
-    .then(() => {
-      client.query(
-        "SELECT pswd FROM user_acc WHERE usrn = $1",
-        [username],
-        function(err, queryRes) {
-          if (err) {
-            console.log(err);
-            res.sendStatus(500);
-            client.end();
-            return;
-          }
-          if (!queryRes.rows[0]) {
-            console.log("Client error: No username found");
-            res.sendStatus(401);
-            client.end();
-            return;
-          }
-
-          // Check password
-          let hash = queryRes.rows[0].pswd;
-          let compareRes = bcrypt.compareSync(password, hash);
-          if (!compareRes) {
-            console.log("Client error: Wrong password");
-            res.sendStatus(401);
-            client.end();
-            return;
-          } else {
-            // Return token
-            res.status(200);
-            res.json({
-              token: jwt.newJWT(username, "nodejs")
-            });
-            client.end();
-            return;
-          }
+    .then(() =>
+      client.query("SELECT pswd FROM user_acc WHERE usrn = $1", [username])
+    )
+    .then(r => {
+      if (!r.rows[0]) {
+        console.log("Client error: No username found");
+        res.sendStatus(401);
+      } else {
+        // Check password
+        let hash = r.rows[0].pswd;
+        let compareRes = bcrypt.compareSync(password, hash);
+        if (!compareRes) {
+          console.log("Client error: Wrong password");
+          res.sendStatus(401);
+        } else {
+          // Return token
+          res.status(200);
+          res.json({
+            token: jwt.newJWT(username, "nodejs")
+          });
         }
-      );
+      }
     })
-    .catch(err => {
-      console.log(err);
+    .catch(e => {
+      console.log(e);
       res.sendStatus(512);
-      client.end();
-      return;
-    });
+    })
+    .finally(() => client.end());
 };
 
 exports.signup = function(req, res) {
