@@ -1,30 +1,13 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("./jwt");
 const { Client } = require("pg");
-
-function isAlphaNumeric(str) {
-  for (let i = 0; i < str.length; i++) {
-    let code = str.charCodeAt(i);
-    if (
-      !(code > 47 && code < 58) && // numeric (0-9)
-      !(code > 64 && code < 91) && // upper alpha (A-Z)
-      !(code > 96 && code < 123)
-    ) {
-      // lower alpha (a-z)
-      return false;
-    }
-  }
-  return true;
-}
+const { getClient, isAlphaNumeric } = require("./helper.js");
 
 exports.login = function(req, res) {
   console.log("Middleware: login.login");
-
+  // Username data
   let username = req.body.username;
   let password = req.body.password;
-  console.log("Username: " + username);
-  console.log("Password: " + password);
-
   // Check empty fields
   if (!username) {
     console.log("Client error: No username received");
@@ -36,22 +19,8 @@ exports.login = function(req, res) {
     res.sendStatus(401);
     return;
   }
-
-  let client = null;
-  if (process.env.DATABASE_URL) {
-    client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: true
-    });
-  } else {
-    client = new Client({
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      password: process.env.DB_PASSWORD,
-      port: process.env.DB_PORT
-    });
-  }
+  // Create DB Client object
+  let client = getClient();
   client
     .connect()
     .then(() =>
@@ -86,19 +55,16 @@ exports.login = function(req, res) {
 
 exports.signup = function(req, res) {
   console.log("Middleware: signup");
-  console.log(req.body);
-
+  // Username data
   let username = req.body.username;
   let password = req.body.password;
   let hash = bcrypt.hashSync(password, 5);
-
-  // Check empty username
+  // Login validation
   if (!username) {
     console.log("Client error: No username received");
     res.sendStatus(401);
     return;
   }
-  // Check empty password
   if (!password) {
     console.log("Client error: No password received");
     res.sendStatus(401);
@@ -129,59 +95,35 @@ exports.signup = function(req, res) {
     res.sendStatus(401);
     return;
   }
-
-  let client = null;
-  if (process.env.DATABASE_URL) {
-    client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: true
-    });
-  } else {
-    client = new Client({
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      password: process.env.DB_PASSWORD,
-      port: process.env.DB_PORT
-    });
-  }
+  // Create DB Client object and connect to DB
+  let client = getClient();
   client
     .connect()
-    .then(() => {
-      client.query(
-        "SELECT usrn FROM user_acc WHERE usrn = $1",
-        [username],
-        function(err, queryRes) {
-          // Check if username is already used
-          if (queryRes.rows[0] != undefined) {
-            console.log("Client error: Username already exists");
-            res.sendStatus(401);
-            client.end();
-            return;
-          }
-          console.log("Server message: Username is free");
-
-          client.query(
-            "INSERT INTO user_acc(usrn, pswd) VALUES ($1, $2) RETURNING *",
-            [username, hash],
-            function(err, queryRes) {
-              if (err) {
-                console.log("Unknown error");
-                console.log(err);
-              }
-              console.log("Server message: Username created");
-              res.sendStatus(200);
-              client.end();
-              return;
-            }
-          );
-        }
+    .then(() =>
+      client.query("SELECT usrn FROM user_acc WHERE usrn = $1", [username])
+    )
+    .then(r => {
+      // Check if username is already used
+      if (r.rows[0] != undefined) {
+        console.log("Client error: Username already exists");
+        res.sendStatus(401);
+        return null;
+      }
+      console.log("Server message: Username is free");
+      return client.query(
+        "INSERT INTO user_acc(usrn, pswd) VALUES ($1, $2) RETURNING *",
+        [username, hash]
       );
+    })
+    .then(r => {
+      if (r) {
+        console.log("Server message: Username created");
+        res.sendStatus(200);
+      }
     })
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
-      client.end();
-      return;
-    });
+    })
+    .finally(() => client.end());
 };
