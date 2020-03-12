@@ -161,23 +161,21 @@ exports.getSingle = function(req, res, next) {
 
 exports.post = function(req, res, next) {
   console.log("Middleware: notes.post");
-
+  // Get some user and note data
   let username = res.locals.username;
   let content = req.body.content;
-
+  let userId = res.locals.user_id;
+  // Return 500 if it's missing either the username or the note content
   if (!username) {
     res.sendStatus(500);
-    return next();
+    return;
   }
-
   if (!content) {
     console.log("Client error: There's no content");
     res.sendStatus(400);
-    return next();
+    return;
   }
-
-  let userId = res.locals.user_id;
-
+  // Create DB Client object
   let client = null;
   if (process.env.DATABASE_URL) {
     client = new Client({
@@ -193,19 +191,21 @@ exports.post = function(req, res, next) {
       port: process.env.DB_PORT
     });
   }
-
+  // Start variables used during the insertion
   let noteId = null;
   let tagIdList = [];
   let tagContentList = [];
-
+  // Start connection and queries
   client
     .connect()
+    // Insert the note itself
     .then(() =>
       client.query(
         "INSERT INTO notes(user_id, content) VALUES ($1, $2) RETURNING id",
         [userId, content]
       )
     )
+    // Extract tags and search which ones already exist
     .then(r => {
       // Transform string of tags into a list
       tagContentList = req.body["tags[]"];
@@ -228,6 +228,7 @@ exports.post = function(req, res, next) {
         queryArray
       );
     })
+    // Insert tags that doesn't exist yet
     .then(r => {
       // Get id of all tags that are in the DB
       for (i in r.rows) {
@@ -257,6 +258,7 @@ exports.post = function(req, res, next) {
         return client.query(queryString, remainTagList);
       }
     })
+    // Create relationship between all tags and the note
     .then(r => {
       // Get the newly added tag IDs
       for (i in r.rows) {
@@ -282,8 +284,14 @@ exports.post = function(req, res, next) {
     .catch(e => {
       client.end();
       console.log(e);
+      res.sendStatus(500);
+      return;
     })
-    .finally(() => client.end());
+    .finally(() => {
+      client.end();
+      res.sendStatus(200);
+      return;
+    });
 };
 
 exports.put = function(req, res, next) {
