@@ -437,28 +437,18 @@ exports.delete = function(req, res, next) {
   }
   client
     .connect()
-    .then(() => {
-      client.query(
-        "DELETE FROM notes WHERE id = $1 AND user_id = $2",
-        [req.params.id, res.locals.user_id],
-        function(err) {
-          if (err) {
-            console.log(err);
-            res.sendStatus(500);
-            client.end();
-            return;
-          }
-
-          res.sendStatus(200);
-          client.end();
-          return next();
-        }
-      );
+    .then(() =>
+      client.query("DELETE FROM notes WHERE id = $1 AND user_id = $2", [
+        req.params.id,
+        res.locals.user_id
+      ])
+    )
+    .then(r => {
+      res.sendStatus(200);
     })
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
-      client.end();
-      return;
-    });
+    })
+    .finally(() => client.end());
 };
