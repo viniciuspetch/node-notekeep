@@ -304,7 +304,6 @@ exports.put = function(req, res, next) {
     });
   }
   // Start variables used during the insertion
-  let noteId = null;
   let tagIdList = [];
   let tagContentList = [];
   // queryArray and queryString, I'll need to store here this time
@@ -325,8 +324,6 @@ exports.put = function(req, res, next) {
       // Transform string of tags into a list
       tagContentList = req.body["tags[]"];
       if (typeof tagContentList == "string") tagContentList = [tagContentList];
-      // Get id of the new note
-      noteId = r.rows[0].id;
       // Prepare query variables
       queryArray = [...tagContentList];
       // Create list of string markers
