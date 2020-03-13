@@ -271,6 +271,143 @@ exports.post = function(req, res, next) {
 };
 
 exports.put = function(req, res, next) {
+  console.log("Middleware: notes.post");
+  // Get some user and note data
+  let username = res.locals.username;
+  let content = req.body.content;
+  let userId = res.locals.user_id;
+  let noteId = req.params.id;
+  // Return 500 if it's missing either the username or the note content
+  if (!username) {
+    res.sendStatus(500);
+    return;
+  }
+  if (!content) {
+    console.log("Client error: There's no content");
+    res.sendStatus(400);
+    return;
+  }
+  // Create DB Client object
+  let client = null;
+  if (process.env.DATABASE_URL) {
+    client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: true
+    });
+  } else {
+    client = new Client({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT
+    });
+  }
+  // Start variables used during the insertion
+  let noteId = null;
+  let tagIdList = [];
+  let tagContentList = [];
+  // queryArray and queryString, I'll need to store here this time
+  let queryArray = [];
+  let queryString = "";
+  // Start connection and queries
+  client
+    .connect()
+    // Insert the note itself
+    .then(() =>
+      client.query(
+        "UPDATE notes SET content = $1, lastupdated = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3",
+        [content, noteId, userId]
+      )
+    )
+    // Extract tags and search which ones already exist
+    .then(r => {
+      // Transform string of tags into a list
+      tagContentList = req.body["tags[]"];
+      if (typeof tagContentList == "string") tagContentList = [tagContentList];
+      // Get id of the new note
+      noteId = r.rows[0].id;
+      // Prepare query variables
+      queryArray = [...tagContentList];
+      // Create list of string markers
+      let param = queryArray.map(function(item, index) {
+        return "$" + (index + 2);
+      });
+      // Add userId to be $1
+      queryArray.unshift(userId);
+      // Run query to select all tags that already exist
+      return client.query(
+        "SELECT id, tag FROM tags WHERE user_id = $1 AND tag IN (" +
+          param.join(", ") +
+          ")",
+        queryArray
+      );
+    })
+    // Insert tags that doesn't exist yet
+    .then(r => {
+      // Get id of all tags that are in the DB
+      for (i in r.rows) {
+        tagIdList.push(r.rows[i].id);
+      }
+      // Get list of tags that are not in the DB
+      let auxList = r.rows.map((v, i) => r.rows[i].tag);
+      let remainTagList = [];
+      for (i in tagContentList) {
+        f = auxList.indexOf(tagContentList[i]);
+        if (f == -1) {
+          remainTagList.push(userId);
+          remainTagList.push(tagContentList[i]);
+        }
+      }
+      // Insert tags that are not in the DB
+      if (remainTagList.length == 0) {
+        // Empty select, just to skip current query
+        return client.query("SELECT NULL LIMIT 0");
+      } else {
+        queryString = "INSERT INTO tags(user_id, tag) VALUES ";
+        for (let i = 0; i < remainTagList.length; i += 2) {
+          queryString +=
+            "($" + (parseInt(i) + 1) + ", $" + (parseInt(i) + 2) + "), ";
+        }
+        queryString = queryString.slice(0, -2) + " RETURNING id";
+        // Run query, return Promise
+        return client.query(queryString, remainTagList);
+      }
+    })
+    // Create relationship between all tags and the note
+    .then(r => {
+      // Get the newly added tag IDs
+      for (i in r.rows) {
+        console.log(r.rows[i].id);
+        tagIdList.push(r.rows[i].id);
+      }
+      console.log(tagIdList);
+      // Build queryArray and queryString
+      queryArray = [];
+      queryString = "INSERT INTO notes_tags(notes_id, tags_id) VALUES ";
+      for (i in tagIdList) {
+        queryArray.push(noteId);
+        queryArray.push(tagIdList[i]);
+      }
+      for (let i = 1; i <= queryArray.length; i += 2) {
+        queryString += "($" + parseInt(i) + ", $" + (parseInt(i) + 1) + "), ";
+      }
+      // Run query, return Promise
+      return client.query("DELETE FROM notes_tags WHERE notes_id = $1", [
+        noteId
+      ]);
+    })
+    .then(() => client.query(queryString.slice(0, -2), queryArray))
+    .then(() => res.sendStatus(200))
+    .catch(e => {
+      console.log(e);
+      res.sendStatus(500);
+    })
+    .finally(() => client.end());
+};
+
+/*
+exports.put = function(req, res, next) {
   console.log("\nMiddleware: notes.put");
   if (!res.locals.username) {
     res.sendStatus(500);
@@ -412,6 +549,7 @@ exports.put = function(req, res, next) {
       return;
     });
 };
+*/
 
 exports.delete = function(req, res, next) {
   console.log("Middleware: notes.delete");
