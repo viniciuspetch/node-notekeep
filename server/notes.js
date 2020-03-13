@@ -36,66 +36,56 @@ exports.getAll = function(req, res, next) {
   }
   client
     .connect()
-    .then(() => {
+    .then(() =>
       client.query(
         "SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = $1 ORDER BY notes.id, tags.id",
-        [res.locals.user_id],
-        function(err, queryRes) {
-          if (err) {
-            console.log(err);
-            res.sendStatus(500);
-            client.end();
-            return;
-          }
-
-          let currId = null;
-          let newRow = null;
-          let newTagList = [];
-          let newRowList = [];
-          if (queryRes.rows.length > 0) {
-            newRow = {
-              id: queryRes.rows[0].id,
-              content: queryRes.rows[0].content,
-              lastupdated: queryRes.rows[0].lastupdated,
-              listURLs: getAllURL(queryRes.rows[0].content)
-            };
-            if (queryRes.rows[0].tag != null) {
-              newTagList.push(queryRes.rows[0].tag);
-            }
-            currId = queryRes.rows[0].id;
-            for (let i = 1; i < queryRes.rows.length; i++) {
-              if (currId != queryRes.rows[i].id) {
-                newRow.tag = newTagList;
-                newRowList.push(newRow);
-                newTagList = [];
-                newRow = {
-                  id: queryRes.rows[i].id,
-                  content: queryRes.rows[i].content,
-                  lastupdated: queryRes.rows[i].lastupdated,
-                  listURLs: getAllURL(queryRes.rows[i].content)
-                };
-                currId = queryRes.rows[i].id;
-              }
-              if (queryRes.rows[i].tag != "null") {
-                newTagList.push(queryRes.rows[i].tag);
-              }
-            }
+        [res.locals.user_id]
+      )
+    )
+    .then(r => {
+      let currId = null;
+      let newRow = null;
+      let newTagList = [];
+      let newRowList = [];
+      if (r.rows.length > 0) {
+        newRow = {
+          id: r.rows[0].id,
+          content: r.rows[0].content,
+          lastupdated: r.rows[0].lastupdated,
+          listURLs: getAllURL(r.rows[0].content)
+        };
+        if (r.rows[0].tag != null) {
+          newTagList.push(r.rows[0].tag);
+        }
+        currId = r.rows[0].id;
+        for (let i = 1; i < r.rows.length; i++) {
+          if (currId != r.rows[i].id) {
             newRow.tag = newTagList;
             newRowList.push(newRow);
+            newTagList = [];
+            newRow = {
+              id: r.rows[i].id,
+              content: r.rows[i].content,
+              lastupdated: r.rows[i].lastupdated,
+              listURLs: getAllURL(r.rows[i].content)
+            };
+            currId = r.rows[i].id;
           }
-          res.status(200);
-          res.send(newRowList);
-          client.end();
-          return next();
+          if (r.rows[i].tag != "null") {
+            newTagList.push(r.rows[i].tag);
+          }
         }
-      );
+        newRow.tag = newTagList;
+        newRowList.push(newRow);
+      }
+      res.status(200);
+      res.send(newRowList);
     })
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
-      client.end();
-      return;
-    });
+    })
+    .finally(() => client.end());
 };
 
 exports.getSingle = function(req, res, next) {
