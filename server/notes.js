@@ -122,39 +122,29 @@ exports.getSingle = function(req, res, next) {
   }
   client
     .connect()
-    .then(() => {
+    .then(() =>
       client.query(
         "SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = $1 AND notes.id = $2 ORDER BY notes.id, tags.id",
-        [res.locals.user_id, req.params.id],
-        function(err, queryRes) {
-          if (err) {
-            console.log(err);
-            res.sendStatus(500);
-            client.end();
-            return;
-          }
-
-          let newTagList = [];
-          for (let i = 0; i < queryRes.rows.length; i++) {
-            newTagList.push(queryRes.rows[i].tag);
-          }
-          let newRow = {
-            id: queryRes.rows[0].id,
-            content: queryRes.rows[0].content,
-            lastupdated: queryRes.rows[0].lastupdated,
-            tag: newTagList
-          };
-          res.status(200);
-          res.send(newRow);
-          client.end();
-          return next();
-        }
-      );
+        [res.locals.user_id, req.params.id]
+      )
+    )
+    .then(r => {
+      let newTagList = [];
+      for (let i = 0; i < r.rows.length; i++) {
+        newTagList.push(r.rows[i].tag);
+      }
+      let newRow = {
+        id: r.rows[0].id,
+        content: r.rows[0].content,
+        lastupdated: r.rows[0].lastupdated,
+        tag: newTagList
+      };
+      res.status(200);
+      res.send(newRow);
     })
     .catch(err => {
       console.log(err);
       res.sendStatus(512);
-      return;
     })
     .finally(() => client.end());
 };
