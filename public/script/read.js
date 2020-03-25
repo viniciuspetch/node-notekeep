@@ -133,7 +133,7 @@ function readPost() {
       let currDate = new Date(response[i].lastupdated);
 
       $("#noteList").append(
-        '<div class="col-4 note-item">' +
+        '<div class="col-12 col-md-6 col-lg-4 note-item">' +
           '<div class="card-item">' +
           '<img src="' +
           response[i].img +
