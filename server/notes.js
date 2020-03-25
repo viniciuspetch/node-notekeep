@@ -1,4 +1,5 @@
 const { Client } = require("pg");
+const fs = require("fs");
 require("dotenv").config();
 
 function getAllURL(string) {
@@ -48,7 +49,12 @@ exports.getAll = function(req, res, next) {
       let newTagList = [];
       let newRowList = [];
       if (r.rows.length > 0) {
+        let img = "";
+        if (fs.existsSync("./public/uploads/" + r.rows[0].id + ".png")) {
+          img = "/uploads/" + r.rows[0].id + ".png";
+        }
         newRow = {
+          img: img,
           id: r.rows[0].id,
           content: r.rows[0].content,
           lastupdated: r.rows[0].lastupdated,
@@ -63,7 +69,11 @@ exports.getAll = function(req, res, next) {
             newRow.tag = newTagList;
             newRowList.push(newRow);
             newTagList = [];
+            if (fs.existsSync("./public/uploads/" + r.rows[i].id + ".png")) {
+              img = "/uploads/" + r.rows[i].id + ".png";
+            }
             newRow = {
+              img: img,
               id: r.rows[i].id,
               content: r.rows[i].content,
               lastupdated: r.rows[i].lastupdated,
@@ -261,7 +271,12 @@ exports.post = function(req, res, next) {
       console.log(queryString);
       return client.query(queryString.slice(0, -2), queryArray);
     })
-    .then(() => res.sendStatus(200))
+    .then(() => {
+      if (req.files.image) {
+        req.files.image.mv("./public/uploads/" + noteId + ".png");
+      }
+      res.sendStatus(200);
+    })
     .catch(e => {
       console.log(e);
       res.sendStatus(500);

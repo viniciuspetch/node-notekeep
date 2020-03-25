@@ -1,5 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const expressFileupload = require("express-fileupload");
+
 const jwt = require("./server/jwt");
 const tags = require("./server/tags");
 const notes = require("./server/notes");
@@ -15,6 +17,7 @@ app.use(
     extended: false
   })
 );
+app.use(expressFileupload());
 
 app.get("/", web.index);
 app.get("/login", web.login);

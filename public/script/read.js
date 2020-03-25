@@ -135,6 +135,9 @@ function readPost() {
       $("#noteList").append(
         '<div class="col-4 note-item">' +
           '<div class="card-item">' +
+          '<img src="' +
+          response[i].img +
+          '" style="width:100%">' +
           '<div class="note-body">' +
           '<div class="row">' +
           '<div class="col-12 note-padding">' +
