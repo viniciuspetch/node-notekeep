@@ -182,6 +182,11 @@ function readPost() {
 $(function() {
   console.log("read.js");
   console.log(localStorage.getItem("token"));
+
+  if (localStorage.getItem('token') == null) {
+    window.location.href = "/";
+  }
+
   readPost();
   tagUsed();
   token = localStorage.getItem("token");

@@ -64,4 +64,7 @@ function create() {
 $(function() {
   console.log("create.js");
   console.log(localStorage.getItem("token"));
+  if (localStorage.getItem('token') == null) {
+    window.location.href = "/";
+  }
 });

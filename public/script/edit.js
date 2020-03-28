@@ -59,6 +59,11 @@ function edit() {
 $(function () {
   console.log('edit.js');
   console.log(localStorage.getItem('token'));
+
+  if (localStorage.getItem('token') == null) {
+    window.location.href = "/";
+  }
+
   let token = localStorage.getItem('token');
 
   let currUrlArray = window.location.href.split('/');
