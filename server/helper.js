@@ -31,3 +31,14 @@ exports.isAlphaNumeric = function(str) {
   }
   return true;
 };
+
+exports.getAllURL = function (string) {
+  let listURLs = [];
+  stringSplit = string.split(" ");
+  for (let i in stringSplit) {
+    if (stringSplit[i].search("[.]") != -1) {
+      listURLs.push(stringSplit[i]);
+    }
+  }
+  return listURLs;
+}

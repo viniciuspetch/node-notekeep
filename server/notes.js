@@ -1,17 +1,7 @@
 const { Client } = require("pg");
 const fs = require("fs");
 require("dotenv").config();
-
-function getAllURL(string) {
-  let listURLs = [];
-  stringSplit = string.split(" ");
-  for (let i in stringSplit) {
-    if (stringSplit[i].search("[.]") != -1) {
-      listURLs.push(stringSplit[i]);
-    }
-  }
-  return listURLs;
-}
+const helper = require("./helper.js");
 
 exports.getAll = function(req, res, next) {
   console.log("Middleware: notes.getAll");
@@ -20,7 +10,7 @@ exports.getAll = function(req, res, next) {
     return next();
   }
 
-  let client = getClient();
+  let client = helper.getClient();
   client
     .connect()
     .then(() =>
@@ -44,7 +34,7 @@ exports.getAll = function(req, res, next) {
           id: r.rows[0].id,
           content: r.rows[0].content,
           lastupdated: r.rows[0].lastupdated,
-          listURLs: getAllURL(r.rows[0].content)
+          listURLs: helper.getAllURL(r.rows[0].content)
         };
         if (r.rows[0].tag != null) {
           newTagList.push(r.rows[0].tag);
@@ -63,7 +53,7 @@ exports.getAll = function(req, res, next) {
               id: r.rows[i].id,
               content: r.rows[i].content,
               lastupdated: r.rows[i].lastupdated,
-              listURLs: getAllURL(r.rows[i].content)
+              listURLs: helper.getAllURL(r.rows[i].content)
             };
             currId = r.rows[i].id;
           }
@@ -91,7 +81,7 @@ exports.getSingle = function(req, res, next) {
     return next();
   }
 
-  let client = getClient();
+  let client = helper.getClient();
   client
     .connect()
     .then(() =>
@@ -142,7 +132,7 @@ exports.post = function(req, res, next) {
   let tagIdList = [];
   let tagContentList = [];
 
-  let client = getClient();
+  let client = helper.getClient();
   client
     .connect()
     // Insert the note itself
@@ -229,7 +219,7 @@ exports.post = function(req, res, next) {
       return client.query(queryString.slice(0, -2), queryArray);
     })
     .then(() => {
-      if (req.files.image) {
+      if (req['files'] && req.files.image) {
         req.files.image.mv("./public/uploads/" + noteId + ".png");
       }
       res.sendStatus(200);
@@ -265,7 +255,7 @@ exports.put = function(req, res, next) {
   let queryArray = [];
   let queryString = "";
 
-  let client = getClient();
+  let client = helper.getClient();
   client
     .connect()
     // Insert the note itself
@@ -366,7 +356,7 @@ exports.delete = function(req, res, next) {
     return next();
   }
 
-  let client = getClient();
+  let client = helper.getClient();
   client
     .connect()
     .then(() =>
