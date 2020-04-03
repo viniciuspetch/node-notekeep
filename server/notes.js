@@ -20,21 +20,7 @@ exports.getAll = function(req, res, next) {
     return next();
   }
 
-  let client = null;
-  if (process.env.DATABASE_URL) {
-    client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: true
-    });
-  } else {
-    client = new Client({
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      password: process.env.DB_PASSWORD,
-      port: process.env.DB_PORT
-    });
-  }
+  let client = getClient();
   client
     .connect()
     .then(() =>
@@ -105,21 +91,7 @@ exports.getSingle = function(req, res, next) {
     return next();
   }
 
-  let client = null;
-  if (process.env.DATABASE_URL) {
-    client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: true
-    });
-  } else {
-    client = new Client({
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      password: process.env.DB_PASSWORD,
-      port: process.env.DB_PORT
-    });
-  }
+  let client = getClient();
   client
     .connect()
     .then(() =>
@@ -165,27 +137,12 @@ exports.post = function(req, res, next) {
     res.sendStatus(400);
     return;
   }
-  // Create DB Client object
-  let client = null;
-  if (process.env.DATABASE_URL) {
-    client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: true
-    });
-  } else {
-    client = new Client({
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      password: process.env.DB_PASSWORD,
-      port: process.env.DB_PORT
-    });
-  }
-  // Start variables used during the insertion
+
   let noteId = null;
   let tagIdList = [];
   let tagContentList = [];
-  // Start connection and queries
+
+  let client = getClient();
   client
     .connect()
     // Insert the note itself
@@ -302,29 +259,13 @@ exports.put = function(req, res, next) {
     res.sendStatus(400);
     return;
   }
-  // Create DB Client object
-  let client = null;
-  if (process.env.DATABASE_URL) {
-    client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: true
-    });
-  } else {
-    client = new Client({
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      password: process.env.DB_PASSWORD,
-      port: process.env.DB_PORT
-    });
-  }
-  // Start variables used during the insertion
+
   let tagIdList = [];
   let tagContentList = [];
-  // queryArray and queryString, I'll need to store here this time
   let queryArray = [];
   let queryString = "";
-  // Start connection and queries
+
+  let client = getClient();
   client
     .connect()
     // Insert the note itself
@@ -418,151 +359,6 @@ exports.put = function(req, res, next) {
     .finally(() => client.end());
 };
 
-/*
-exports.put = function(req, res, next) {
-  console.log("\nMiddleware: notes.put");
-  if (!res.locals.username) {
-    res.sendStatus(500);
-    return next();
-  }
-
-  if (!req.body.content) {
-    console.log("Client error: There's no content");
-    res.sendStatus(400);
-    return next();
-  }
-
-  let userId = res.locals.user_id;
-  let noteId = req.params.id;
-
-  let client = null;
-  if (process.env.DATABASE_URL) {
-    client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: true
-    });
-  } else {
-    client = new Client({
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      password: process.env.DB_PASSWORD,
-      port: process.env.DB_PORT
-    });
-  }
-  client
-    .connect()
-    .then(() => {
-      client.query(
-        "UPDATE notes SET content = $1, lastupdated = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3",
-        [req.body.content, noteId, userId],
-        function(err, queryRes) {
-          if (err) {
-            console.log(err);
-            res.sendStatus(500);
-            client.end();
-            return;
-          }
-
-          let tagList = req.body["tags[]"];
-          if (typeof tagList == "string") {
-            tagList = [tagList];
-          }
-          let tagListLength = tagList.length;
-
-          // Delete all notes-tags relationship entries for the edited note
-          client.query(
-            "DELETE FROM notes_tags WHERE notes_id = $1",
-            [noteId],
-            function(err, queryRes) {
-              if (err) {
-                console.log(err);
-                res.sendStatus(500);
-                client.end();
-                return;
-              }
-
-              // For each received tag, get its ID
-              for (let i = 0; i < tagListLength; i++) {
-                client.query(
-                  "SELECT id FROM tags WHERE tag = $1 AND user_id = $2",
-                  [tagList[i], userId],
-                  function(err, queryRes) {
-                    console.log("Get tag");
-                    if (err) {
-                      console.log(err);
-                      res.sendStatus(500);
-                      client.end();
-                      return;
-                    }
-
-                    // If it doesn't exist, insert it and then create the relationship
-                    if (queryRes.rows.length == 0) {
-                      client.query(
-                        "INSERT into tags(user_id, tag) VALUES ($1, $2) RETURNING id",
-                        [userId, tagList[i]],
-                        function(err, queryRes) {
-                          if (err) {
-                            console.log(err);
-                            res.sendStatus(500);
-                            client.end();
-                            return;
-                          }
-
-                          let tagId = queryRes.rows[0].id;
-
-                          client.query(
-                            "INSERT into notes_tags(notes_id, tags_id) VALUES ($1, $2)",
-                            [noteId, tagId],
-                            function(err, queryRes) {
-                              if (err) {
-                                console.log(err);
-                                res.sendStatus(500);
-                                client.end();
-                                return;
-                              }
-                            }
-                          );
-                        }
-                      );
-                    }
-                    // Otherwise, just add the relationship
-                    else {
-                      let tagId = queryRes.rows[0].id;
-
-                      client.query(
-                        "INSERT into notes_tags(notes_id, tags_id) VALUES ($1, $2)",
-                        [noteId, tagId],
-                        function(err, queryRes) {
-                          if (err) {
-                            console.log(err);
-                            res.sendStatus(500);
-                            client.end();
-                            return;
-                          }
-                        }
-                      );
-                    }
-                  }
-                );
-              }
-            }
-          );
-          res.sendStatus(200);
-          client.end();
-          return next();
-        }
-      );
-    })
-    .catch(err => {
-      console.log(err);
-      res.sendStatus(512);
-      client.end();
-      return;
-    });
-};
-*/
-
 exports.delete = function(req, res, next) {
   console.log("Middleware: notes.delete");
   if (!res.locals.username) {
@@ -570,21 +366,7 @@ exports.delete = function(req, res, next) {
     return next();
   }
 
-  let client = null;
-  if (process.env.DATABASE_URL) {
-    client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: true
-    });
-  } else {
-    client = new Client({
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      password: process.env.DB_PASSWORD,
-      port: process.env.DB_PORT
-    });
-  }
+  let client = getClient();
   client
     .connect()
     .then(() =>
