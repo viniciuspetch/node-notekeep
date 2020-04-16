@@ -165,5 +165,5 @@ $(function () {
   });
 
   $("#tag-list").change(search());
-  $("#noteTemplate").attr("");
+  $("#noteTemplate").attr("display", "none");
 });
