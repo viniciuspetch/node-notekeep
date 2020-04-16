@@ -2,22 +2,11 @@ function search() {
   console.log("Function: search()");
   let searchString = $("#searchbar").val();
   let tagString = $("#tag-list").val();
-  $(".note-item").each(function() {
-    if (
-      $(this)
-        .find(".note-tags")
-        .text()
-        .includes(tagString)
-    ) {
+  $(".note-item").each(function () {
+    if ($(this).find(".note-tags").text().includes(tagString)) {
       if (
-        $(this)
-          .find(".note-content")
-          .text()
-          .includes(searchString) ||
-        $(this)
-          .find(".note-tags")
-          .text()
-          .includes(searchString)
+        $(this).find(".note-content").text().includes(searchString) ||
+        $(this).find(".note-tags").text().includes(searchString)
       ) {
         $(this).show();
       } else {
@@ -35,8 +24,8 @@ function tagUsed() {
     url: "/api/tagUsed",
     method: "GET",
     headers: {
-      Authorization: "Bearer " + localStorage.getItem("token")
-    }
+      Authorization: "Bearer " + localStorage.getItem("token"),
+    },
   })
     .done((data, textStatus, xhr) => {
       console.log(
@@ -76,8 +65,8 @@ function apiDelete(id) {
     url: "/api/note/" + id,
     method: "DELETE",
     headers: {
-      Authorization: "Bearer " + localStorage.getItem("token")
-    }
+      Authorization: "Bearer " + localStorage.getItem("token"),
+    },
   })
     .done((data, textStatus, xhr) => {
       console.log(
@@ -114,63 +103,42 @@ function readPost() {
     url: "/api/note",
     method: "GET",
     headers: {
-      Authorization: "Bearer " + localStorage.getItem("token")
-    }
-  }).done(response => {
+      Authorization: "Bearer " + localStorage.getItem("token"),
+    },
+  }).done((response) => {
     console.log(response);
     for (let i = 0; i < response.length; i++) {
       console.log(response[i]);
-
       let tagList = response[i].tag.join(", ");
-      /*
-      let tagList = '';
-      for (let j = 0; j < response[i].tag.length; j++) {
-        tagList += response[i].tag[j] + ', ';
-      }
-      */
-
       console.log(response[i].lastupdated);
       let currDate = new Date(response[i].lastupdated);
-
-      $("#noteList").append(
-        '<div class="col-12 col-md-6 col-lg-4 note-item">' +
-          '<div class="card-item">' +
-          '<img src="' +
-          response[i].img +
-          '" style="width:100%">' +
-          '<div class="note-body">' +
-          '<div class="row">' +
-          '<div class="col-12 note-padding">' +
-          '<div class="note-id">' +
-          response[i].id +
-          "</div>" +
-          '<div class="note-tags">' +
-          tagList +
-          "</div>" +
-          '<div class="note-content">' +
-          response[i].content +
-          "</div>" +
-          "<div>" +
-          currDate +
-          "</div>" +
-          "</div>" +
-          '<div class="col-6">' +
-          '<a class="note-btn btn color-2" href="/edit/' +
-          response[i].id +
-          '">Edit</a>' +
-          "</div>" +
-          '<div class="col-6">' +
-          '<a class="note-btn btn color-2" id="noteItem_' +
-          response[i].id +
-          '" href="#">Delete</a>' +
-          "</div>" +
-          "</div>" +
-          "</div>" +
-          "</div>" +
-          "</div>"
-      );
+      $("#noteTemplate")
+        .clone()
+        .attr("id", "note_" + response[i].id)
+        .show()
+        .appendTo("#noteList");
+      $("#note_" + response[i].id)
+        .find("img")
+        .attr("src", response[i].img);
+      $("#note_" + response[i].id)
+        .find(".note-id")
+        .append(response[i].id);
+      $("#note_" + response[i].id)
+        .find(".note-tags")
+        .append(tagList);
+      $("#note_" + response[i].id)
+        .find(".note-content")
+        .append(response[i].content);
+      $("#note_" + response[i].id)
+        .find(".note-date")
+        .append(currDate);
+      $("#note_" + response[i].id)
+        .find(".note-edit")
+        .attr("href", "/edit/" + response[i].id);
+      $("#note_" + response[i].id)
+        .find(".note-delete")
+        .attr("id", "noteItem_" + response[i].id);
       let noteId = "#noteItem_" + response[i].id;
-
       $(noteId).click(() => {
         apiDelete(response[i].id);
       });
@@ -179,20 +147,23 @@ function readPost() {
   });
 }
 
-$(function() {
+$(function () {
   console.log("read.js");
   console.log(localStorage.getItem("token"));
 
-  if (localStorage.getItem('token') == null) {
+  if (localStorage.getItem("token") == null) {
     window.location.href = "/";
   }
 
   readPost();
   tagUsed();
+
   token = localStorage.getItem("token");
-  $("#updateLink").click(function() {
+  $("#updateLink").click(function () {
     $("#noteList").empty();
     readPost();
   });
+
   $("#tag-list").change(search());
+  $("#noteTemplate").attr("");
 });

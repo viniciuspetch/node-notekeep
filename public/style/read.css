@@ -63,3 +63,7 @@
 #searchbar {
   flex: 50%;
 }
+
+#noteTemplate {
+  display: none;
+}
