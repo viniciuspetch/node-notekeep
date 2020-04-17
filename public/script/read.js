@@ -110,6 +110,7 @@ function readPost() {
     for (let i = 0; i < response.length; i++) {
       console.log(response[i]);
       let tagList = response[i].tag.join(", ");
+      let urlList = response[i].listURLs.join(", ");
       console.log(response[i].lastupdated);
       let currDate = new Date(response[i].lastupdated);
       $("#noteTemplate")
@@ -132,6 +133,9 @@ function readPost() {
       $("#note_" + response[i].id)
         .find(".note-date")
         .append(currDate);
+      $("#note_" + response[i].id)
+        .find(".note-urls")
+        .append("URLs: "+urlList);
       $("#note_" + response[i].id)
         .find(".note-edit")
         .attr("href", "/edit/" + response[i].id);
@@ -165,5 +169,4 @@ $(function () {
   });
 
   $("#tag-list").change(search());
-  $("#noteTemplate").attr("display", "none");
 });
