@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const expressFileupload = require("express-fileupload");
+const cors = require("cors");
 
 const jwt = require("./server/jwt");
 const tags = require("./server/tags");
@@ -10,11 +11,12 @@ const web = require("./server/web");
 
 let app = express();
 
+app.use(cors());
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
-    extended: false
+    extended: false,
   })
 );
 app.use(expressFileupload());
@@ -51,7 +53,7 @@ if (process.env.DATABASE_URL) {
   console.log("Heroku");
   client = new Client({
     connectionString: process.env.DATABASE_URL,
-    ssl: true
+    ssl: true,
   });
 } else {
   console.log("Local");
@@ -60,7 +62,7 @@ if (process.env.DATABASE_URL) {
     host: process.env.DB_HOST,
     database: process.env.DB_DATABASE,
     password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT
+    port: process.env.DB_PORT,
   });
 }
 client.connect().then(() => {
@@ -70,6 +72,6 @@ client.connect().then(() => {
   });
 });
 
-app.listen(process.env.PORT || 8000, function() {
+app.listen(process.env.PORT || 8000, function () {
   console.log("Ready");
 });
