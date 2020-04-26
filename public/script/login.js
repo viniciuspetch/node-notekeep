@@ -1,14 +1,21 @@
 function validateLogin(username, password) {
+  var result = true;
+  $("#username").removeClass("input-invalid");
+  $("#password").removeClass("input-invalid");
+  $("#usernameFeedback").hide();
+  $("#passwordFeedback").hide();
   if (!username) {
-    alert("Username is empty");
-    return false;
+    $("#username").addClass("input-invalid");
+    $("#usernameFeedback").show();
+    result = false;
   }
   if (!password) {
-    alert("Password is empty");
-    return false;
+    $("#password").addClass("input-invalid");
+    $("#passwordFeedback").show();
+    result = false;
   }
 
-  return true;
+  return result;
 }
 
 function login() {
@@ -25,8 +32,8 @@ function login() {
       method: "POST",
       data: {
         username,
-        password
-      }
+        password,
+      },
     })
       .done((data, textStatus, xhr) => {
         console.log(
@@ -58,7 +65,7 @@ function login() {
   }
 }
 
-$(function() {
+$(function () {
   console.log("login.js");
   console.log(localStorage.getItem("token"));
 });
