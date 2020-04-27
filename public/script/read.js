@@ -132,16 +132,22 @@ function readPost() {
         .append(response[i].id);
       $("#note_" + response[i].id)
         .find(".note-tags")
-        .append("Tags: "+tagList);
+        .append("Tags: " + tagList);
       $("#note_" + response[i].id)
         .find(".note-content")
         .append(response[i].content);
       $("#note_" + response[i].id)
         .find(".note-date")
         .append(currDate);
-      $("#note_" + response[i].id)
-        .find(".note-urls")
-        .append("URLs: " + urlList);
+      if (urlList.length == 0) {
+        $("#note_" + response[i].id)
+          .find(".note-urls")
+          .hide();
+      } else {
+        $("#note_" + response[i].id)
+          .find(".note-urls")
+          .append("URLs: " + urlList);
+      }
       $("#note_" + response[i].id)
         .find(".note-edit")
         .attr("href", "/edit/" + response[i].id);
