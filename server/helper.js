@@ -1,10 +1,10 @@
 const { Client } = require("pg");
 
-exports.getClient = function() {
+exports.getClient = function () {
   if (process.env.DATABASE_URL) {
     return new Client({
       connectionString: process.env.DATABASE_URL,
-      ssl: true
+      ssl: true,
     });
   } else {
     return new Client({
@@ -12,12 +12,12 @@ exports.getClient = function() {
       host: process.env.DB_HOST,
       database: process.env.DB_DATABASE,
       password: process.env.DB_PASSWORD,
-      port: process.env.DB_PORT
+      port: process.env.DB_PORT,
     });
   }
 };
 
-exports.isAlphaNumeric = function(str) {
+exports.isAlphaNumeric = function (str) {
   for (let i = 0; i < str.length; i++) {
     let code = str.charCodeAt(i);
     if (
@@ -37,8 +37,18 @@ exports.getAllURL = function (string) {
   stringSplit = string.split(" ");
   for (let i in stringSplit) {
     if (stringSplit[i].search("[.]") != -1) {
-      listURLs.push(stringSplit[i]);
+      var splitAgain = stringSplit[i].split(".");
+      console.log(splitAgain);
+      var url = true;
+      for (let j of splitAgain) {
+        if (j == "" || j.search("\n") || j.search("\r")) {
+          url = false;
+        }
+      }
+      if (url) {
+        listURLs.push(stringSplit[i]);
+      }
     }
   }
   return listURLs;
-}
+};
