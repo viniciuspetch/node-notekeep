@@ -38,7 +38,6 @@ exports.getAllURL = function (string) {
   for (let i in stringSplit) {
     if (stringSplit[i].search("[.]") != -1) {
       var splitAgain = stringSplit[i].split(".");
-      console.log(splitAgain);
       var url = true;
       for (let j of splitAgain) {
         if (j == "" || j.search("\n") || j.search("\r")) {
