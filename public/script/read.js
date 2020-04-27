@@ -118,15 +118,21 @@ function readPost() {
         .attr("id", "note_" + response[i].id)
         .show()
         .appendTo("#noteList");
-      $("#note_" + response[i].id)
-        .find("img")
-        .attr("src", response[i].img);
+      if (response[i].img == "") {
+        $("#note_" + response[i].id)
+          .find("img")
+          .hide();
+      } else {
+        $("#note_" + response[i].id)
+          .find("img")
+          .attr("src", response[i].img);
+      }
       $("#note_" + response[i].id)
         .find(".note-id")
         .append(response[i].id);
       $("#note_" + response[i].id)
         .find(".note-tags")
-        .append(tagList);
+        .append("Tags: "+tagList);
       $("#note_" + response[i].id)
         .find(".note-content")
         .append(response[i].content);
@@ -135,7 +141,7 @@ function readPost() {
         .append(currDate);
       $("#note_" + response[i].id)
         .find(".note-urls")
-        .append("URLs: "+urlList);
+        .append("URLs: " + urlList);
       $("#note_" + response[i].id)
         .find(".note-edit")
         .attr("href", "/edit/" + response[i].id);
