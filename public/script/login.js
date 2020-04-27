@@ -47,6 +47,7 @@ function login() {
             data
         );
         localStorage.setItem("token", data.token);
+        localStorage.setItem("username", username);
         window.location.href = "../";
       })
       .fail((xhr, textStatus, err) => {
