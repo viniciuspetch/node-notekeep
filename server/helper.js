@@ -40,7 +40,7 @@ exports.getAllURL = function (string) {
       var splitAgain = stringSplit[i].split(".");
       var url = true;
       for (let j of splitAgain) {
-        if (j == "" || j.search("\n") || j.search("\r")) {
+        if (j == "" || j.search("\n") != -1) {
           url = false;
         }
       }
