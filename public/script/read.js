@@ -125,14 +125,28 @@ function readPost() {
       } else {
         $("#note_" + response[i].id)
           .find("img")
+          .show();
+        $("#note_" + response[i].id)
+          .find("img")
           .attr("src", response[i].img);
       }
       $("#note_" + response[i].id)
         .find(".note-id")
         .append(response[i].id);
-      $("#note_" + response[i].id)
-        .find(".note-tags")
-        .append("Tags: " + tagList);
+
+      if (tagList.length == 0) {
+        $("#note_" + response[i].id)
+          .find(".note-tags")
+          .hide();
+      } else {
+        $("#note_" + response[i].id)
+          .find(".note-tags")
+          .show();
+        $("#note_" + response[i].id)
+          .find(".note-tags")
+          .append("Tags: " + tagList);
+      }
+
       $("#note_" + response[i].id)
         .find(".note-content")
         .append(response[i].content);
@@ -144,6 +158,9 @@ function readPost() {
           .find(".note-urls")
           .hide();
       } else {
+        $("#note_" + response[i].id)
+          .find(".note-urls")
+          .show();
         $("#note_" + response[i].id)
           .find(".note-urls")
           .append("URLs: " + urlList);
