@@ -24,7 +24,7 @@ exports.login = function(req, res) {
   client
     .connect()
     .then(() =>
-      client.query("SELECT pswd FROM user_acc WHERE usrn = $1", [username])
+      client.query("SELECT * FROM user_acc WHERE usrn = $1", [username])
     )
     .then(r => {
       if (!r.rows[0]) {
@@ -41,7 +41,7 @@ exports.login = function(req, res) {
           // Return token
           res.status(200);
           res.json({
-            token: jwt.newJWT(username, "nodejs")
+            token: jwt.newJWT(username, r.rows[0].id, "nodejs")
           });
         }
       }
