@@ -1,72 +1,52 @@
 .container {
-  margin-top: 30px;
-}
+  margin-top: 30px; }
 
 .btn {
   width: 100%;
-  margin: auto;
-}
+  margin: auto; }
 
 .btn:hover {
   background-color: #3d4446;
-  color: #ffffff;
-}
+  color: #ffffff; }
 
 .note-item {
-  margin: 10px 0px;
-}
+  margin: 10px 0px; }
 
 .card-item {
   background-color: #515058;
-  border-radius: 10px;
-}
+  border-radius: 10px; }
 
 .note-id {
   font-size: 20px;
   font-weight: bold;
-  display: inline;
-}
+  display: inline; }
 
 .note-body {
   padding: 10px;
-  text-align: left;
-}
+  text-align: left; }
 
 .note-content {
   padding-top: 20px;
-  padding-bottom: 20px;
-}
+  padding-bottom: 20px; }
 
 .btn a {
   color: #ffffff;
-  text-decoration: none; /* no underline */
-}
-
-.btn a {
-  color: #ffffff;
-  text-decoration: none; /* no underline */
-}
+  text-decoration: none;
+  /* no underline */ }
 
 .update-btn {
-  margin: 15px 0 15px 0;
-}
+  margin: 15px 0 15px 0; }
 
 .note-padding {
-  padding-bottom: 20px;
-}
+  padding-bottom: 20px; }
 
 #searchbar {
-  flex: 50%;
-}
+  flex: 50%; }
 
 #noteTemplate {
-  display: none;
-}
+  display: none; }
 
 .list-group {
-  background: #00000000;
-}
-
-.list-group .list-group-item {
-  background: #00000000;
-}
+  background: #00000000; }
+  .list-group .list-group-item {
+    background: #00000000; }
