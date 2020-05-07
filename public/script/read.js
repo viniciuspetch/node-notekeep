@@ -118,6 +118,19 @@ function readPost() {
         .attr("id", "note_" + response[i].id)
         .show()
         .appendTo("#noteList");
+
+      //
+      $("#note_" + response[i].id)
+        .find("#note-marked")
+        .change(function () {
+          updateMark(response[i].id, $(this).prop("checked"));
+        });
+      if (response[i].marked == true) {
+        $("#note_" + response[i].id)
+          .find("#note-marked")
+          .prop("checked", true);
+      }
+
       if (response[i].img == "") {
         $("#note_" + response[i].id)
           .find("img")
@@ -178,6 +191,17 @@ function readPost() {
     }
     return false;
   });
+}
+
+function updateMark(a, b) {
+  fetch("/api/note/" + a + "/setMark", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("token"),
+    },
+    body: JSON.stringify({ marked: b }),
+  }).then((r) => console.log(r));
 }
 
 $(function () {

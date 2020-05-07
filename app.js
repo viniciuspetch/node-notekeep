@@ -34,6 +34,7 @@ app.post("/api/signup", login.signup);
 
 app.get("/api/note", jwt.auth, notes.getAll);
 app.get("/api/note/:id", jwt.auth, notes.getSingle);
+app.patch("/api/note/:id/setMark", jwt.auth, notes.setMark);
 app.post("/api/note", jwt.auth, notes.post);
 app.put("/api/note/:id", jwt.auth, notes.put);
 app.delete("/api/note/:id", jwt.auth, notes.delete);

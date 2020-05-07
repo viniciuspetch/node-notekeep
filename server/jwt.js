@@ -35,6 +35,7 @@ exports.verifyJWT = function (token, secret) {
     return jsonwebtoken.verify(token, secret).username;
   } catch (err) {
     console.log("Request Error: Json Web Token received is invalid");
+    console.log(err)
     return false;
   }
 };

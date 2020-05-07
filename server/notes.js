@@ -3,7 +3,7 @@ const fs = require("fs");
 require("dotenv").config();
 const helper = require("./helper.js");
 
-exports.getAll = function(req, res, next) {
+exports.getAll = function (req, res, next) {
   console.log("Middleware: notes.getAll");
   if (!res.locals.username) {
     res.sendStatus(500);
@@ -15,11 +15,11 @@ exports.getAll = function(req, res, next) {
     .connect()
     .then(() =>
       client.query(
-        "SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = $1 ORDER BY notes.id, tags.id",
+        "SELECT notes.id, notes.content, notes.lastupdated, notes.marked, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = $1 ORDER BY notes.id, tags.id",
         [res.locals.user_id]
       )
     )
-    .then(r => {
+    .then((r) => {
       let currId = null;
       let newRow = null;
       let newTagList = [];
@@ -32,9 +32,10 @@ exports.getAll = function(req, res, next) {
         newRow = {
           img: img,
           id: r.rows[0].id,
+          marked: r.rows[0].marked,
           content: r.rows[0].content,
           lastupdated: r.rows[0].lastupdated,
-          listURLs: helper.getAllURL(r.rows[0].content)
+          listURLs: helper.getAllURL(r.rows[0].content),
         };
         if (r.rows[0].tag != null) {
           newTagList.push(r.rows[0].tag);
@@ -51,9 +52,10 @@ exports.getAll = function(req, res, next) {
             newRow = {
               img: img,
               id: r.rows[i].id,
+              marked: r.rows[i].marked,
               content: r.rows[i].content,
               lastupdated: r.rows[i].lastupdated,
-              listURLs: helper.getAllURL(r.rows[i].content)
+              listURLs: helper.getAllURL(r.rows[i].content),
             };
             currId = r.rows[i].id;
           }
@@ -67,14 +69,14 @@ exports.getAll = function(req, res, next) {
       res.status(200);
       res.send(newRowList);
     })
-    .catch(err => {
+    .catch((err) => {
       console.log(err);
       res.sendStatus(512);
     })
     .finally(() => client.end());
 };
 
-exports.getSingle = function(req, res, next) {
+exports.getSingle = function (req, res, next) {
   console.log("Middleware: notes.getSingle");
   if (!res.locals.username) {
     res.sendStatus(500);
@@ -86,32 +88,33 @@ exports.getSingle = function(req, res, next) {
     .connect()
     .then(() =>
       client.query(
-        "SELECT notes.id, notes.content, notes.lastupdated, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = $1 AND notes.id = $2 ORDER BY notes.id, tags.id",
+        "SELECT notes.id, notes.content, notes.lastupdated, notes.marked, tags.tag FROM notes LEFT JOIN notes_tags ON notes.id = notes_tags.notes_id LEFT JOIN tags ON notes_tags.tags_id = tags.id WHERE notes.user_id = $1 AND notes.id = $2 ORDER BY notes.id, tags.id",
         [res.locals.user_id, req.params.id]
       )
     )
-    .then(r => {
+    .then((r) => {
       let newTagList = [];
       for (let i = 0; i < r.rows.length; i++) {
         newTagList.push(r.rows[i].tag);
       }
       let newRow = {
         id: r.rows[0].id,
+        marked: r.rows[0].marked,
         content: r.rows[0].content,
         lastupdated: r.rows[0].lastupdated,
-        tag: newTagList
+        tag: newTagList,
       };
       res.status(200);
       res.send(newRow);
     })
-    .catch(err => {
+    .catch((err) => {
       console.log(err);
       res.sendStatus(512);
     })
     .finally(() => client.end());
 };
 
-exports.post = function(req, res, next) {
+exports.post = function (req, res, next) {
   console.log("Middleware: notes.post");
   // Get some user and note data
   let username = res.locals.username;
@@ -143,7 +146,7 @@ exports.post = function(req, res, next) {
       )
     )
     // Extract tags and search which ones already exist
-    .then(r => {
+    .then((r) => {
       // Transform string of tags into a list
       tagContentList = req.body["tags[]"];
       if (typeof tagContentList == "string") tagContentList = [tagContentList];
@@ -152,7 +155,7 @@ exports.post = function(req, res, next) {
       // Prepare query variables
       queryArray = [...tagContentList];
       // Create list of string markers
-      let param = queryArray.map(function(item, index) {
+      let param = queryArray.map(function (item, index) {
         return "$" + (index + 2);
       });
       // Add userId to be $1
@@ -166,7 +169,7 @@ exports.post = function(req, res, next) {
       );
     })
     // Insert tags that doesn't exist yet
-    .then(r => {
+    .then((r) => {
       // Get id of all tags that are in the DB
       for (i in r.rows) {
         tagIdList.push(r.rows[i].id);
@@ -196,7 +199,7 @@ exports.post = function(req, res, next) {
       }
     })
     // Create relationship between all tags and the note
-    .then(r => {
+    .then((r) => {
       // Get the newly added tag IDs
       for (i in r.rows) {
         console.log(r.rows[i].id);
@@ -219,12 +222,12 @@ exports.post = function(req, res, next) {
       return client.query(queryString.slice(0, -2), queryArray);
     })
     .then(() => {
-      if (req['files'] && req.files.image) {
+      if (req["files"] && req.files.image) {
         req.files.image.mv("./public/uploads/" + noteId + ".png");
       }
       res.sendStatus(200);
     })
-    .catch(e => {
+    .catch((e) => {
       console.log(e);
       res.sendStatus(500);
       return;
@@ -232,7 +235,33 @@ exports.post = function(req, res, next) {
     .finally(() => client.end());
 };
 
-exports.put = function(req, res, next) {
+exports.setMark = function (req, res, next) {
+  console.log("Middleware: notes.setMark");
+  // Get some user and note data
+  let userId = res.locals.user_id;
+  let noteId = req.params.id;
+  let marked = req.body.marked;
+  console.log(noteId, marked, req.body.asd);
+  console.log(req.body)
+
+  let client = helper.getClient();
+  client
+    .connect()
+    // Insert the note itself
+    .then(() =>
+      client.query(
+        "UPDATE notes SET marked = $1 WHERE id = $2 AND user_id = $3",
+        [marked, noteId, userId]
+      )
+    )
+    .catch((e) => {
+      console.log(e);
+    })
+    .finally(() => client.end());
+  res.sendStatus(204);
+};
+
+exports.put = function (req, res, next) {
   console.log("Middleware: notes.post");
   // Get some user and note data
   let username = res.locals.username;
@@ -266,14 +295,14 @@ exports.put = function(req, res, next) {
       )
     )
     // Extract tags and search which ones already exist
-    .then(r => {
+    .then((r) => {
       // Transform string of tags into a list
       tagContentList = req.body["tags[]"];
       if (typeof tagContentList == "string") tagContentList = [tagContentList];
       // Prepare query variables
       queryArray = [...tagContentList];
       // Create list of string markers
-      let param = queryArray.map(function(item, index) {
+      let param = queryArray.map(function (item, index) {
         return "$" + (index + 2);
       });
       // Add userId to be $1
@@ -287,7 +316,7 @@ exports.put = function(req, res, next) {
       );
     })
     // Insert tags that doesn't exist yet
-    .then(r => {
+    .then((r) => {
       // Get id of all tags that are in the DB
       for (i in r.rows) {
         tagIdList.push(r.rows[i].id);
@@ -318,7 +347,7 @@ exports.put = function(req, res, next) {
       }
     })
     // Create relationship between all tags and the note
-    .then(r => {
+    .then((r) => {
       // Get the newly added tag IDs
       for (i in r.rows) {
         console.log(r.rows[i].id);
@@ -337,19 +366,19 @@ exports.put = function(req, res, next) {
       }
       // Run query, return Promise
       return client.query("DELETE FROM notes_tags WHERE notes_id = $1", [
-        noteId
+        noteId,
       ]);
     })
     .then(() => client.query(queryString.slice(0, -2), queryArray))
     .then(() => res.sendStatus(200))
-    .catch(e => {
+    .catch((e) => {
       console.log(e);
       res.sendStatus(500);
     })
     .finally(() => client.end());
 };
 
-exports.delete = function(req, res, next) {
+exports.delete = function (req, res, next) {
   console.log("Middleware: notes.delete");
   if (!res.locals.username) {
     res.sendStatus(500);
@@ -362,13 +391,13 @@ exports.delete = function(req, res, next) {
     .then(() =>
       client.query("DELETE FROM notes WHERE id = $1 AND user_id = $2", [
         req.params.id,
-        res.locals.user_id
+        res.locals.user_id,
       ])
     )
-    .then(r => {
+    .then((r) => {
       res.sendStatus(200);
     })
-    .catch(err => {
+    .catch((err) => {
       console.log(err);
       res.sendStatus(512);
     })
